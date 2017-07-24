@@ -1,0 +1,79 @@
+{% load static %}
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+    <HEAD>
+        <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+        <TITLE>Simple Demonstration of how WebGazer.js works</TITLE>
+	<link rel="stylesheet" type="text/css" href="{% static 'styles/common/home_style.css'%}">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    </HEAD>
+    <BODY>
+	<div class="top"> 
+		<p>
+		<center>Teaching with Technology</center>	
+		</p>
+	</div>
+	<div class="left">
+		
+  		
+	</div>
+	<div class="main">
+		You are being Logged out. You will be redirected to the main page in 30 seconds. <br />
+		Alternatively, Click <a href=/>here</a> to go to the main page.
+	</div>
+	<div class="topleft">
+		<p>
+	    <center>Dharna Icon here</center>
+		</p>
+	</div>
+    </BODY>
+<script type="text/javascript"> 
+/*function funcMissionStatement(){
+	var el = document.getElementById('foo');
+	var el = document.getElementById('foo');
+	var el = document.getElementById('foo');
+	var el = document.getElementById('foo');
+	var el = document.getElementById('foo'); 
+}
+*/
+window.onload = function(){
+	var divMS = document.getElementById("a_missionStatement");
+	var divDharna = document.getElementById("a_dharna_v1_0");
+	var divContact = document.getElementById("a_contactUs");
+	var divDemo = document.getElementById("a_liveDemo");
+
+	divMS.onclick = function(){
+		document.getElementById("dharna_v1_0").style.display="none";
+		document.getElementById("missionStatement").style.display="block";
+		document.getElementById("contactUs").style.display="none";
+		document.getElementById("liveDemo").style.display="none";
+		return false;
+	};
+	divDharna.onclick = function(){
+		//alert("hello");
+		document.getElementById("dharna_v1_0").style.display="block";
+		document.getElementById("missionStatement").style.display="none";
+		document.getElementById("contactUs").style.display="none";
+		document.getElementById("liveDemo").style.display="none";
+		return false;
+	};
+	divContact.onclick = function(){
+		document.getElementById("dharna_v1_0").style.display="none";
+		document.getElementById("missionStatement").style.display="none";
+		document.getElementById("contactUs").style.display="block";
+		document.getElementById("liveDemo").style.display="none";
+		return false;
+	};
+	divDemo.onclick = function(){
+		document.getElementById("dharna_v1_0").style.display="none";
+		document.getElementById("missionStatement").style.display="none";
+		document.getElementById("contactUs").style.display="none";
+		document.getElementById("liveDemo").style.display="block";
+		return false;
+	};
+
+}
+</script>
+
+</HTML>
