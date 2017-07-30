@@ -1034,7 +1034,7 @@ def teacher_prev_lectures(request):
 
 #region view new lectures
 def teacher_new_lectures(request):
-is_logged_in = 0
+    is_logged_in = 0
     if not request.session.get("type") == 'teacher':
         return HttpResponseRedirect('/')
     _username = request.session.get("username")
