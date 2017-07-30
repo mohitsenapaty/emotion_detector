@@ -33,4 +33,9 @@ urlpatterns = [
     url(r'^login_combined_app_test/', views.login_combined_app_test, name='login_combined_app_test'),
     url(r'^chatframe/', views.chatframe, name='chatframe'),
     url(r'^register_page/', views.register_page, name='register_page'),
+    url(r'^teacher_profile_info/', views.teacher_profile_info, name='teacher_profile_info'),
+    url(r'^update_teacher_info/', views.update_teacher_info, name='update_teacher_info'),
+    url(r'^student_profile_info/', views.student_profile_info, name='student_profile_info'),
+    url(r'^update_student_info/', views.update_student_info, name='update_student_info'),
+    url(r'^teacher_create_lecture/', views.teacher_create_lecture, name='teacher_create_lecture'),
 ]

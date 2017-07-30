@@ -20,12 +20,18 @@
 		<p><a href="#" id="a_contactUs">Contact Us</a></p>
 		<p><a href="#" id="a_liveDemo">Live Demo</a></p>
         {% if is_logged_in == 0 %} 
-        <p>You are not logged in</p>
-  		<p><a href="#" id ="a_log_in">Live Learning Login</a></p>
-        <p><a href="/register_page"> </a></p>
+            <p>You are not logged in</p>
+  		    <p><a href="#" id ="a_log_in">Live Learning Login</a></p>
+            <p><a href="/register_page"> </a></p>
         {% else %}
-        <p>Welcome, {{ username }} Logined as {{ logintype }}</p>
-        <p><a href="/log_out/" id ="a_log_out">Log out</a></p>
+            <p>Welcome, {{ username }} Logined as {{ logintype }}</p>
+            {% if logintype == 'teacher'%}
+                <p><a href=/teacher_profile_info/>Click Here</a> to view your profile.</p>
+            {%endif%}
+            {% if logintype == 'student'%}
+                <p><a href=/student_profile_info/>Click Here</a> to view your profile.</p>
+            {%endif%}
+            <p><a href="/log_out/" id ="a_log_out">Log out</a></p>
         {% endif %}
 	</div>
 	<div class="main">

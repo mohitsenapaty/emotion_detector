@@ -8,8 +8,10 @@ from . import send_email
 import json, matplotlib, time
 import matplotlib.pyplot as plt
 import datetime as dt
+from pytz import timezone 
 from .models import *
 import MySQLdb 
+import dateutil.parser
 
 
 glob_float_att_array = []
@@ -534,6 +536,7 @@ def chatframe(request):
     return render(request, template, returnDict)
 #end chatframe
 
+#start register_page
 def register_page(request):
     context = locals()
     #region: store ip details
@@ -591,8 +594,10 @@ def register_page(request):
         #set other session params
         is_logged_in = 0
         is_registered = 1
+        ent_array = EntityTable.objects.filter(section=None).values()
+        sd_array = SchoolDetails.objects.all().values()
         template = 'register_page.html'
-        returnDict = {'is_logged_in':is_logged_in, 'is_registered':is_registered,'username':request.session.get("username"), 'error_message':'None', 'logintype':request.session.get('type')}
+        returnDict = {'is_logged_in':is_logged_in, 'is_registered':is_registered,'username':request.session.get("username"), 'error_message':'None', 'logintype':request.session.get('type'), 'sd_a':sd_array, 'ent_a':ent_array}
         return render(request, template, returnDict)
     else:
         is_registered = 2
@@ -607,8 +612,6 @@ def register_page(request):
 
     #endregion
     #import pdb; pdb.set_trace();
-    
-
     template = 'register_page.html'
     returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'is_registered':is_registered, 'error_message':'None'}
     return render(request, template, returnDict)
@@ -676,4 +679,379 @@ def get_reg_authentication(request):
     return {'success':None, 'msg':"Some Network Error."}
     
 #end region get reg authentication
+
+#start teacher_profile_info
+def teacher_profile_info(request):
+
+    is_logged_in = 0
+    if not request.session.get("type") == 'teacher':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    if not _username == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+        teacher_info = get_teacher_info(_username)
+
+        if teacher_info == None:
+            #return error page
+            template = 'teacher_profile_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'Some network or Internal Error. Try after some time.'}
+            return render(request, template, returnDict)
+
+        template = 'teacher_profile_info.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'None', 'teacher_login':teacher_info['teacher_login'].__dict__, 'teacher_detail':teacher_info['teacher_detail'].__dict__}
+        return render(request, template, returnDict) 
+    else:
+        return HttpResponseRedirect('/')
+#end teacher_profile_info
+
+#start get_teacher_info
+def get_teacher_info(_username):
+
+    try:
+        teacher_obj = TeacherLogin.objects.get(username=_username)
+        teacher_det_obj = TeacherDetail.objects.get(teacher=teacher_obj)
+        return {'teacher_login':teacher_obj, 'teacher_detail':teacher_det_obj}
+    except:
+        return None
+#end get_teacher_info
+
+#start def update teacher info
+def update_teacher_info(request):
+    is_logged_in = 0
+    if not request.session.get("type") == 'teacher':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    if not _username == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+        teacher_info = get_teacher_info(_username)
+
+        if teacher_info == None:
+            #return error page
+            template = 'teacher_profile_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'Some network or Internal Error. Try after some time.'}
+            return render(request, template, returnDict)
+
+        #handle POST data here
+        if not request.POST.get("password"):
+            template = 'update_teacher_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'None', 'teacher_login':teacher_info['teacher_login'].__dict__, 'teacher_detail':teacher_info['teacher_detail'].__dict__, 'msg':'Update your personal information and password here.'}
+            return render(request, template, returnDict)
+
+        #handle request.POST here
+        update_data = update_teacher_data(request.POST, teacher_info)
+
+        if update_data["success"] == 0:
+            template = 'update_teacher_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':update_data["msg"], 'teacher_login':teacher_info['teacher_login'].__dict__, 'teacher_detail':teacher_info['teacher_detail'].__dict__}
+            return render(request, template, returnDict)
+        else:
+            template = 'update_teacher_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':update_data['msg'], 'teacher_login':teacher_info['teacher_login'].__dict__, 'teacher_detail':teacher_info['teacher_detail'].__dict__}
+            return render(request, template, returnDict)
+
+        template = 'update_teacher_info.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'None', 'teacher_login':teacher_info['teacher_login'].__dict__, 'teacher_detail':teacher_info['teacher_detail'].__dict__}
+        return render(request, template, returnDict) 
+    else:
+        return HttpResponseRedirect('/')
+#end def update_teacher_info
+
+#start region update teacher data
+def update_teacher_data(posted_dict, teacher_info):
+    _pwd = posted_dict.get("password")
+    _pwd_n = posted_dict.get("new_password")
+    _pwd_r = posted_dict.get("re_new_password")
+
+    _email = posted_dict.get("email")
+    _phone = posted_dict.get("phone")
+
+    if not _pwd == teacher_info['teacher_login'].__dict__.get("password"):
+        return {"success":0, "msg":"Incorrect Password"}
+    if not _pwd_n == _pwd_r:
+        return {"success":0, "msg":"mismatch in new password"}
+    if _pwd == _pwd_n:
+        return {"success":0, "msg":"Same password entered"}
+    if _email == teacher_info['teacher_detail'].__dict__.get("email"):
+        return {"success":0, "msg":"Same email"}
+    if _phone == teacher_info['teacher_detail'].__dict__.get("phone"):
+        return {"success":0, "msg":"Same phone"}
+    #else do changes and return true
+    if _pwd_n == '' and _pwd_n_r == '' and _email == '' and _phone == '':
+        return {"success":0, "msg":"No changes made."}
+    if _pwd_n == None and _pwd_n_r == None and _email == None and _phone == None:
+        return {"success":0, "msg":"No changes made."}
+    try:
+        if _pwd_n:
+            #update pwd
+            tr_lg = TeacherLogin.objects.get(username=teacher_info['teacher_login'].__dict__.get("username"))
+            tr_lg.password=_pwd_n
+            tr_lg.save()
+        if _email:
+            #update email
+            tr_dl = TeacherDetail.objects.get(teacher_id=teacher_info['teacher_detail'].__dict__.get("teacher_id"))
+            tr_dl.email=_email
+            tr_dl.save()
+        if _phone:
+            #update phone  
+            tr_dl = TeacherDetail.objects.get(teacher_id=teacher_info['teacher_detail'].__dict__.get("teacher_id"))
+            tr_dl.phone=_phone
+            tr_dl.save()
+        return {"success":1, "msg":"Successfully Updated data."}
+    except:
+        return {"success":0, "msg":"SQL error"}
+
+    return {"success":1, "msg":"Successfully Updated data."}
+#end region update teacher data
+
+#start student_profile_info
+def student_profile_info(request):
+
+    is_logged_in = 0
+    if not request.session.get("type") == 'student':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    if not _username == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+        student_info = get_student_info(_username)
+
+        if student_info == None:
+            #return error page
+            template = 'student_profile_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'Some network or Internal Error. Try after some time.'}
+            return render(request, template, returnDict)
+
+        template = 'student_profile_info.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'None', 'student_login':student_info['student_login'].__dict__, 'student_detail':student_info['student_detail'].__dict__}
+        return render(request, template, returnDict) 
+    else:
+        return HttpResponseRedirect('/')
+#end student_profile_info
+
+#start get_student_info
+def get_student_info(_username):
+
+    try:
+        student_obj = StudentLogin.objects.get(username=_username)
+        student_det_obj = StudentDetail.objects.get(student=student_obj)
+        return {'student_login':student_obj, 'student_detail':student_det_obj}
+    except:
+        return None
+#end get_student_info
+
+#start def update student info
+def update_student_info(request):
+    is_logged_in = 0
+    if not request.session.get("type") == 'student':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    if not _username == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+        student_info = get_student_info(_username)
+
+        if student_info == None:
+            #return error page
+            template = 'student_profile_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'Some network or Internal Error. Try after some time.'}
+            return render(request, template, returnDict)
+
+        #handle POST data here
+        if not request.POST.get("password"):
+            template = 'update_student_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'None', 'student_login':student_info['student_login'].__dict__, 'student_detail':student_info['student_detail'].__dict__, 'msg':'Update your personal information and password here.'}
+            return render(request, template, returnDict)
+
+        #handle request.POST here
+        update_data = update_student_data(request.POST, student_info)
+
+        if update_data["success"] == 0:
+            template = 'update_student_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':update_data["msg"], 'student_login':student_info['student_login'].__dict__, 'student_detail':student_info['student_detail'].__dict__}
+            return render(request, template, returnDict)
+        else:
+            template = 'update_student_info.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':update_data['msg'], 'student_login':student_info['student_login'].__dict__, 'student_detail':student_info['student_detail'].__dict__}
+            return render(request, template, returnDict)
+
+        template = 'update_student_info.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"),'logintype':request.session.get('type'), 'error':'None', 'student_login':student_info['student_login'].__dict__, 'student_detail':student_info['student_detail'].__dict__}
+        return render(request, template, returnDict) 
+    else:
+        return HttpResponseRedirect('/')
+#end def update_student_info
+
+#start region update student data
+def update_student_data(posted_dict, student_info):
+    _pwd = posted_dict.get("password")
+    _pwd_n = posted_dict.get("new_password")
+    _pwd_r = posted_dict.get("re_new_password")
+
+    _email = posted_dict.get("email")
+    _phone = posted_dict.get("phone")
+
+    if not _pwd == student_info['student_login'].__dict__.get("password"):
+        return {"success":0, "msg":"Incorrect Password"}
+    if not _pwd_n == _pwd_r:
+        return {"success":0, "msg":"mismatch in new password"}
+    if _pwd == _pwd_n:
+        return {"success":0, "msg":"Same password entered"}
+    if _email == student_info['student_detail'].__dict__.get("email"):
+        return {"success":0, "msg":"Same email"}
+    if _phone == student_info['student_detail'].__dict__.get("phone"):
+        return {"success":0, "msg":"Same phone"}
+    #else do changes and return true
+    if _pwd_n == '' and _pwd_n_r == '' and _email == '' and _phone == '':
+        return {"success":0, "msg":"No changes made."}
+    if _pwd_n == None and _pwd_n_r == None and _email == None and _phone == None:
+        return {"success":0, "msg":"No changes made."}
+    try:
+        if _pwd_n:
+            #update pwd
+            tr_lg = StudentLogin.objects.get(username=student_info['student_login'].__dict__.get("username"))
+            tr_lg.password=_pwd_n
+            tr_lg.save()
+        if _email:
+            #update email
+            tr_dl = StudentDetail.objects.get(student_id=student_info['student_detail'].__dict__.get("student_id"))
+            tr_dl.email=_email
+            tr_dl.save()
+        if _phone:
+            #update phone  
+            tr_dl = StudentDetail.objects.get(student_id=student_info['student_detail'].__dict__.get("student_id"))
+            tr_dl.phone=_phone
+            tr_dl.save()
+        return {"success":1, "msg":"Successfully Updated data."}
+    except:
+        return {"success":0, "msg":"SQL error"}
+
+    return {"success":1, "msg":"Successfully Updated data."}
+#end region update student data
+
+#start region teacher create lecture
+def teacher_create_lecture(request):
+    is_logged_in = 0
+    if not request.session.get("type") == 'teacher':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    ent_array = EntityTable.objects.filter(section=None).values()
+    sd_array = SchoolDetails.objects.all().values()
+    if not _username == None:
+        is_logged_in = 1
+        #handle POST data here
+        if not request.POST.get("password"):
+            template = 'teacher_create_lecture.html'
+            returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'error':'None', 'msg':'Create a lecture here.', 'sd_a':sd_array, 'ent_a':ent_array}
+            return render(request, template, returnDict)
+        else:
+            #print request.POST
+            created_lecture = create_lecture(request.POST, _id)
+            if created_lecture.get("success") == 1:
+                template = 'teacher_create_lecture.html'
+                returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'error':'None', 'msg':created_lecture.get("msg"), 'sd_a':sd_array, 'ent_a':ent_array}
+                return render(request, template, returnDict)
+            else:
+                template = 'teacher_create_lecture.html'
+                returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'error':created_lecture.get("msg"), 'msg':created_lecture.get("msg"), 'sd_a':sd_array, 'ent_a':ent_array}
+                return render(request, template, returnDict)
+    else:
+        return HttpResponseRedirect('/')
+#end region teacher create lecture
+
+#start region create lecture
+def create_lecture(my_dict, _id):
+    _pwd = my_dict.get("password")
+    _sub = my_dict.get("subject")
+    _top = my_dict.get("topic")
+    _desc = my_dict.get("description")
+    _s_hr = my_dict.get("start_hour")
+    _s_min = my_dict.get("start_min")
+    _e_hr = my_dict.get("end_hour")
+    _e_min = my_dict.get("end_min")
+    _dt = my_dict.get("date")
+    _school = int(my_dict.get("school"))
+    _class = int(my_dict.get("Class"))
+
+    _s_tm_temp = "%s %s:%s:00+5:30"%(_dt, _s_hr, _s_min)
+    _s_tm = dateutil.parser.parse(_s_tm_temp)
+
+    _e_tm_temp = "%s %s:%s:00+5:30"%(_dt, _e_hr, _e_min)
+    _e_tm = dateutil.parser.parse(_e_tm_temp)
+    _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta')).strftime("%Y-%m-%d %H:%M:%S+05:30")
+    _c_tm = dateutil.parser.parse(_c_tm_temp)
+    
+    import pdb; pdb.set_trace();
+    if not _c_tm < _s_tm:
+        return {"success":0, "msg":"Timing error"}
+    if not _s_tm < _e_tm:
+        return {"success":0, "msg":"Timing error"}
+
+    if not _pwd == TeacherLogin.objects.get(teacher_id=_id).__dict__.get("password"):
+        return {"success":0, "msg":"Invalid password"}
+
+    try:
+        t_obj = TeacherLogin(teacher_id=_id)
+        s_obj = SchoolDetails(school_id=_school)
+        e_obj = EntityTable(entity_id=_class)
+        lt_obj = LectureTeacher(teacher=t_obj, school=s_obj, entity=e_obj, lecture_start_time=_s_tm, lecture_end_time=_e_tm, subject=_sub, topic=_top, description=_desc)
+        lt_obj.save()
+        return {"success":1, "msg":"Lecture Created."}
+    except:
+        return {"success":0, "msg":"SQL error"} 
+
+    return {"success":0, "msg":"SQL error"} 
+#end region create lecture
+
+#region view prev lectures
+def teacher_prev_lectures(request):
+    is_logged_in = 0
+    if not request.session.get("type") == 'teacher':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    #ent_array = EntityTable.objects.filter(section=None).values()
+    #sd_array = SchoolDetails.objects.all().values()
+    disp_arr = []
+    if not _username == None:
+        is_logged_in = 1
+        lt_objs = LectureTeacher.objects.filter(teacher_id=_id)
+        for lt_obj in lt_objs:
+            if lt_obj.__dict__.get("lecture_start_time") <= dt.datetime.now():
+                disp_arr.append(lt_obj.__dict__)
+        template = 'teacher_create_lecture.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
+        return render(request, template, returnDict)
+    else:
+        return HttpResponseRedirect('/')
+#end region view prev lectures
+
+#region view new lectures
+def teacher_new_lectures(request):
+is_logged_in = 0
+    if not request.session.get("type") == 'teacher':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    #ent_array = EntityTable.objects.filter(section=None).values()
+    #sd_array = SchoolDetails.objects.all().values()
+    disp_arr = []
+    if not _username == None:
+        is_logged_in = 1
+        lt_objs = LectureTeacher.objects.filter(teacher_id=_id)
+        for lt_obj in lt_objs:
+            if lt_obj.__dict__.get("lecture_start_time") > dt.datetime.now():
+                disp_arr.append(lt_obj.__dict__)
+        template = 'teacher_create_lecture.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
+        return render(request, template, returnDict)
+    else:
+        return HttpResponseRedirect('/')
+#end region view new lectures
 

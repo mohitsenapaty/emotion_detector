@@ -131,6 +131,35 @@ class EntityTable(models.Model):
         unique_together = (('class_field', 'section'),)
 
 
+class LectureStudent(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    student = models.ForeignKey('StudentLogin', models.DO_NOTHING)
+    lecture = models.ForeignKey('LectureTeacher', models.DO_NOTHING)
+    present = models.CharField(max_length=1)
+    attention_percent = models.FloatField(blank=True, null=True)
+    emotion_data = models.CharField(max_length=500, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lecture_student'
+
+
+class LectureTeacher(models.Model):
+    lecture_id = models.BigAutoField(primary_key=True)
+    teacher = models.ForeignKey('TeacherLogin', models.DO_NOTHING)
+    entity = models.ForeignKey(EntityTable, models.DO_NOTHING)
+    school = models.ForeignKey('SchoolDetails', models.DO_NOTHING)
+    lecture_start_time = models.DateTimeField()
+    lecture_end_time = models.DateTimeField()
+    subject = models.CharField(max_length=50, blank=True, null=True)
+    topic = models.CharField(max_length=50, blank=True, null=True)
+    description = models.CharField(max_length=400, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'lecture_teacher'
+
+
 class SchoolDetails(models.Model):
     school_id = models.AutoField(primary_key=True)
     school_name = models.CharField(max_length=200)
@@ -142,16 +171,6 @@ class SchoolDetails(models.Model):
     class Meta:
         managed = False
         db_table = 'school_details'
-
-
-class StudentLogin(models.Model):
-    student_id = models.AutoField(primary_key=True)
-    username = models.CharField(unique=True, max_length=100)
-    password = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'student_login'
 
 
 class StudentDetail(models.Model):
@@ -169,14 +188,14 @@ class StudentDetail(models.Model):
         db_table = 'student_detail'
 
 
-class TeacherLogin(models.Model):
-    teacher_id = models.AutoField(primary_key=True)
+class StudentLogin(models.Model):
+    student_id = models.AutoField(primary_key=True)
     username = models.CharField(unique=True, max_length=100)
     password = models.CharField(max_length=100)
 
     class Meta:
         managed = False
-        db_table = 'teacher_login'
+        db_table = 'student_login'
 
 
 class TeacherDetail(models.Model):
@@ -192,3 +211,12 @@ class TeacherDetail(models.Model):
         managed = False
         db_table = 'teacher_detail'
 
+
+class TeacherLogin(models.Model):
+    teacher_id = models.AutoField(primary_key=True)
+    username = models.CharField(unique=True, max_length=100)
+    password = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'teacher_login'
