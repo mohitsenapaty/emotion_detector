@@ -55,8 +55,8 @@
                 <center>Welcome, {{username}}</center>
             </p>
             <p>
-                teacher id: {{ teacher_id }} </br>
-                teacher username: {{ username }} </br>
+                student id: {{ student_id }} </br>
+                student username: {{ username }} </br>
             </p>
             
         </div>
@@ -64,26 +64,30 @@
             <p><table>
                 <tr>
                 <th>Lecture id</th>
-                <th>Teacher id</th>
-                <th>Class id</th>
-                <th>School id</th>
-                <th>Lecture Start time</th>
-                <th>Lecture End time</th>
+                <th>Teacher</th>
                 <th>Subject</th>
                 <th>Topic</th>
                 <th>Description</th>
+                <th>Lecture Start time</th>
+                <th>Lecture End time</th>
+                <th>Present</th>
+                <th>Attention %</th>
+                <th>Emotion Data</th>
+                <th>Link</th>
                 </tr>
                 {% for elem in disp_arr %}
                     <tr>
                     <td>{{ elem.lecture_id }}</td> 
-                    <td>{{ elem.teacher_id }}</td> 
-                    <td>{{ elem.entity_id }}</td> 
-                    <td>{{ elem.school_id }}</td> 
+                    <td>{{ elem.teacher }}</td> 
+                    <td>{{ elem.subject }}</td> 
+                    <td>{{ elem.topic }}</td> 
+		            <td>{{ elem.description }}</td>
                     <td>{{ elem.lecture_start_time }}</td> 
                     <td>{{ elem.lecture_end_time }}</td> 
-                    <td>{{ elem.subject }}</td>
-                    <td>{{ elem.topic }}</td> 
-                    <td>{{ elem.description }}</td>
+                    <td>{{ elem.present }}</td>
+                    <td>{{ elem.attention_percent }}</td> 
+                    <td>{{ elem.emotion_data }}</td>
+                    <td><a href="/attend_lecture_student/{{elem.lecture_id}}/">Attend Lecture</a></td>
                     </tr>
                 {% endfor %}
             </table></p>

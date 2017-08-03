@@ -72,6 +72,7 @@
                 <th>Subject</th>
                 <th>Topic</th>
                 <th>Description</th>
+                <th>Links</th>
                 </tr>
                 {% for elem in disp_arr %}
                     <tr>
@@ -84,6 +85,7 @@
                     <td>{{ elem.subject }}</td>
                     <td>{{ elem.topic }}</td> 
                     <td>{{ elem.description }}</td>
+                    <td><a href="/start_lecture_teacher/">Lecture Page</a></th>
                     </tr>
                 {% endfor %}
             </table></p>

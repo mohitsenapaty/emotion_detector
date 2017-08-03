@@ -987,7 +987,7 @@ def create_lecture(my_dict, _id):
     _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta')).strftime("%Y-%m-%d %H:%M:%S+05:30")
     _c_tm = dateutil.parser.parse(_c_tm_temp)
     
-    import pdb; pdb.set_trace();
+    #import pdb; pdb.set_trace();
     if not _c_tm < _s_tm:
         return {"success":0, "msg":"Timing error"}
     if not _s_tm < _e_tm:
@@ -997,11 +997,15 @@ def create_lecture(my_dict, _id):
         return {"success":0, "msg":"Invalid password"}
 
     try:
-        t_obj = TeacherLogin(teacher_id=_id)
-        s_obj = SchoolDetails(school_id=_school)
-        e_obj = EntityTable(entity_id=_class)
+        t_obj = TeacherLogin.objects.get(teacher_id=_id)
+        s_obj = SchoolDetails.objects.get(school_id=_school)
+        e_obj = EntityTable.objects.get(entity_id=_class)
         lt_obj = LectureTeacher(teacher=t_obj, school=s_obj, entity=e_obj, lecture_start_time=_s_tm, lecture_end_time=_e_tm, subject=_sub, topic=_top, description=_desc)
         lt_obj.save()
+        st_objs = StudentDetail.objects.filter(school=s_obj, entity=e_obj)
+        for st_obj in st_objs:
+            sl_obj = LectureStudent(student=st_obj.student, lecture=lt_obj, present="N", attention_percent=0, emotion_data="no data")
+            sl_obj.save()
         return {"success":1, "msg":"Lecture Created."}
     except:
         return {"success":0, "msg":"SQL error"} 
@@ -1023,9 +1027,12 @@ def teacher_prev_lectures(request):
         is_logged_in = 1
         lt_objs = LectureTeacher.objects.filter(teacher_id=_id)
         for lt_obj in lt_objs:
-            if lt_obj.__dict__.get("lecture_start_time") <= dt.datetime.now():
+            _c_tm_temp = dt.datetime.now(timezone('UTC')).strftime("%Y-%m-%d %H:%M:%S")
+            _c_tm = dateutil.parser.parse(_c_tm_temp)
+            _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
+            if _o_tm < _c_tm:
                 disp_arr.append(lt_obj.__dict__)
-        template = 'teacher_create_lecture.html'
+        template = 'teacher_prev_lectures.html'
         returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
         return render(request, template, returnDict)
     else:
@@ -1046,12 +1053,120 @@ def teacher_new_lectures(request):
         is_logged_in = 1
         lt_objs = LectureTeacher.objects.filter(teacher_id=_id)
         for lt_obj in lt_objs:
-            if lt_obj.__dict__.get("lecture_start_time") > dt.datetime.now():
+            _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta')).strftime("%Y-%m-%d %H:%M:%S")
+            _c_tm = dateutil.parser.parse(_c_tm_temp)
+            _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
+            if _o_tm >= _c_tm:
                 disp_arr.append(lt_obj.__dict__)
-        template = 'teacher_create_lecture.html'
+        #print disp_arr
+        template = 'teacher_new_lectures.html'
         returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
         return render(request, template, returnDict)
     else:
         return HttpResponseRedirect('/')
 #end region view new lectures
+
+#region view prev lectures
+def student_prev_lectures(request):
+    is_logged_in = 0
+    if not request.session.get("type") == 'student':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    #ent_array = EntityTable.objects.filter(section=None).values()
+    #sd_array = SchoolDetails.objects.all().values()
+    disp_arr = []
+    if not _username == None:
+        is_logged_in = 1
+        ls_objs = LectureStudent.objects.filter(student_id=_id)
+        for ls_obj in ls_objs:
+            lt_obj = ls_obj.lecture
+            tl_obj = lt_obj.teacher
+            _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta')).strftime("%Y-%m-%d %H:%M:%S")
+            _c_tm = dateutil.parser.parse(_c_tm_temp)
+            _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
+            if _o_tm < _c_tm:
+                temp_dict = {}
+                lt_obj_dict = lt_obj.__dict__
+                ls_obj_dict = ls_obj.__dict__
+                tl_obj_dict = tl_obj.__dict__
+                temp_dict["lecture_id"] = ls_obj_dict.get("lecture_id")
+                temp_dict["teacher"] = tl_obj_dict.get("username")
+                temp_dict["subject"] = lt_obj_dict.get("subject")
+                temp_dict["topic"] = lt_obj_dict.get("topic")
+                temp_dict["description"] = lt_obj_dict.get("description")
+                temp_dict["lecture_start_time"] = lt_obj_dict.get("lecture_start_time")
+                temp_dict["lecture_end_time"] = lt_obj_dict.get("lecture_end_time")
+                temp_dict["present"] = ls_obj_dict.get("present")
+                temp_dict["attention_percent"] = ls_obj_dict.get("attention_percent")
+                temp_dict["emotion_data"] = ls_obj_dict.get("emotion_data")
+                disp_arr.append(temp_dict)
+        template = 'student_prev_lectures.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'student_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
+        return render(request, template, returnDict)
+    else:
+        return HttpResponseRedirect('/')
+#end region view prev lectures
+
+#region view new lectures
+def student_new_lectures(request):
+    is_logged_in = 0
+    if not request.session.get("type") == 'student':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    #ent_array = EntityTable.objects.filter(section=None).values()
+    #sd_array = SchoolDetails.objects.all().values()
+    disp_arr = []
+    if not _username == None:
+        is_logged_in = 1
+        ls_objs = LectureStudent.objects.filter(student_id=_id)
+        for ls_obj in ls_objs:
+            lt_obj = ls_obj.lecture
+            tl_obj = lt_obj.teacher
+            _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta'))
+            _c_tm = dateutil.parser.parse(_c_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
+            _o_tm_temp = lt_obj.__dict__.get("lecture_end_time").astimezone(timezone('Asia/Calcutta'))
+            _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
+            #print _c_tm, _o_tm, _c_tm_temp, _o_tm_temp
+            if _o_tm >= _c_tm:
+                temp_dict = {}
+                lt_obj_dict = lt_obj.__dict__
+                ls_obj_dict = ls_obj.__dict__
+                tl_obj_dict = tl_obj.__dict__
+                temp_dict["lecture_id"] = ls_obj_dict.get("lecture_id")
+                temp_dict["teacher"] = tl_obj_dict.get("username")
+                temp_dict["subject"] = lt_obj_dict.get("subject")
+                temp_dict["topic"] = lt_obj_dict.get("topic")
+                temp_dict["description"] = lt_obj_dict.get("description")
+                temp_dict["lecture_start_time"] = lt_obj_dict.get("lecture_start_time")
+                temp_dict["lecture_end_time"] = lt_obj_dict.get("lecture_end_time")
+                temp_dict["present"] = ls_obj_dict.get("present")
+                temp_dict["attention_percent"] = ls_obj_dict.get("attention_percent")
+                temp_dict["emotion_data"] = ls_obj_dict.get("emotion_data")
+                disp_arr.append(temp_dict)
+        #print disp_arr
+        template = 'student_new_lectures.html'
+        returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'student_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
+        return render(request, template, returnDict)
+    else:
+        return HttpResponseRedirect('/')
+#end region view new lectures
+
+#start region attend lecture student
+def attend_lecture_student(request, lecture_id):
+    i_lecture_id = int(lecture_id)
+    is_logged_in = 0
+    if not request.session.get("type") == 'student':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    if not _username == None:
+        ls_obj = LectureStudent.objects.filter(lecture_id=i_lecture_id, student_id=_id)
+        if len(ls_obj) == 0:
+            return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/login_combined_app/')
+    else:
+        return HttpResponseRedirect('/')
+#end region end lecture student
 

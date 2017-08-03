@@ -38,4 +38,9 @@ urlpatterns = [
     url(r'^student_profile_info/', views.student_profile_info, name='student_profile_info'),
     url(r'^update_student_info/', views.update_student_info, name='update_student_info'),
     url(r'^teacher_create_lecture/', views.teacher_create_lecture, name='teacher_create_lecture'),
+    url(r'^teacher_prev_lectures/', views.teacher_prev_lectures, name='teacher_prev_lectures'),
+    url(r'^teacher_new_lectures/', views.teacher_new_lectures, name='teacher_new_lectures'),
+    url(r'^student_prev_lectures/', views.student_prev_lectures, name='student_prev_lectures'),
+    url(r'^student_new_lectures/', views.student_new_lectures, name='student_new_lectures'),
+    url(r'^attend_lecture_student/(?P<lecture_id>\d+)/', views.attend_lecture_student, name='attend_lecture_student'),
 ]
