@@ -1154,19 +1154,39 @@ def student_new_lectures(request):
 #end region view new lectures
 
 #start region attend lecture student
-def attend_lecture_student(request, lecture_id):
-    i_lecture_id = int(lecture_id)
+def attend_lecture_student(request, lecture_id1):
+    i_lecture_id = int(lecture_id1)
     is_logged_in = 0
     if not request.session.get("type") == 'student':
         return HttpResponseRedirect('/')
     _username = request.session.get("username")
     _id = request.session.get("id")
     if not _username == None:
-        ls_obj = LectureStudent.objects.filter(lecture_id=i_lecture_id, student_id=_id)
+        lt_obj = LectureTeacher.objects.get(lecture_id=i_lecture_id)
+        ls_obj = LectureStudent.objects.filter(lecture=lt_obj, student=StudentLogin.objects.get(student_id=_id))
         if len(ls_obj) == 0:
             return HttpResponseRedirect('/')
+        request.session["lecture_id"] = i_lecture_id
         return HttpResponseRedirect('/login_combined_app/')
     else:
         return HttpResponseRedirect('/')
 #end region end lecture student
+
+#start region start lecture teacher
+def start_lecture_teacher(request, lecture_id1):
+    i_lecture_id = int(lecture_id1)
+    is_logged_in = 0
+    if not request.session.get("type") == 'teacher':
+        return HttpResponseRedirect('/')
+    _username = request.session.get("username")
+    _id = request.session.get("id")
+    if not _username == None:
+        lt_obj = LectureTeacher.objects.filter(lecture_id=i_lecture_id, teacher=TeacherLogin.objects.get(teacher_id=_id))
+        if len(lt_obj) == 0:
+            return HttpResponseRedirect('/')
+        request.session["lecture_id"] = i_lecture_id
+        return HttpResponseRedirect('/login_combined_app/')
+    else:
+        return HttpResponseRedirect('/')
+#end region start lecture teacher
 

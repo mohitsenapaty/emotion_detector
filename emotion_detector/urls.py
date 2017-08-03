@@ -42,5 +42,6 @@ urlpatterns = [
     url(r'^teacher_new_lectures/', views.teacher_new_lectures, name='teacher_new_lectures'),
     url(r'^student_prev_lectures/', views.student_prev_lectures, name='student_prev_lectures'),
     url(r'^student_new_lectures/', views.student_new_lectures, name='student_new_lectures'),
-    url(r'^attend_lecture_student/(?P<lecture_id>\d+)/', views.attend_lecture_student, name='attend_lecture_student'),
+    url(r'^attend_lecture_student/(?P<lecture_id1>\d+)/', views.attend_lecture_student, name='attend_lecture_student'),
+    url(r'^start_lecture_teacher/(?P<lecture_id1>\d+)/', views.start_lecture_teacher, name='start_lecture_teacher'),
 ]

@@ -12,7 +12,8 @@ def ws_connect(message):
     # Accept connection
     message.reply_channel.send({"accept": True})
     # Work out room name from path (ignore slashes)
-    room = message.content['path'].strip("/")
+    #print message.http_session.items()
+    room = message.content['path'].strip("/")+str(message.http_session.get('lecture_id'))
     #import pdb; pdb.set_trace();
     print message.keys(), room      
     # Save room in session and add us to the group
