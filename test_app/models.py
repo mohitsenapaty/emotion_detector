@@ -156,6 +156,7 @@ class LectureTeacher(models.Model):
     subject = models.CharField(max_length=50, blank=True, null=True)
     topic = models.CharField(max_length=50, blank=True, null=True)
     description = models.CharField(max_length=400, blank=True, null=True)
+    status = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
         managed = False
