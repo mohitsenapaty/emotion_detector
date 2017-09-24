@@ -5,97 +5,108 @@
     <HEAD>
         <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
         <TITLE>Simple Demonstration of how WebGazer.js works</TITLE>
-	<link rel="stylesheet" type="text/css" href="{% static 'styles/common/home_style.css'%}">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/common/home_style.css'%}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     </HEAD>
     <BODY>
-	<div class="top"> 
-		<p>
-		<center>Teaching with Technology</center>	
-		</p>
-	</div>
-	<div class="left">
-		
-  		{% if is_logged_in == 0 %} 
-		<p>You are not logged in</p>
-	  		<p><a href="#" id ="a_log_in">Live Learning Login</a></p>
-		{% else %}
-		<p>Welcome, {{ username }} Logined as {{ logintype }}</p>
-		<p><a href="/log_out/" id ="a_log_out">Log out</a></p>
-		{% endif %}
-		<p><a href="/">Main Page</a></p>
-  		
-	</div>
-	<div class="main">
-	{% if error_message != 'None' %}
-		<div><p>{{ error_message }}</p></div>
-	{% endif %}
+    <div class="top"> 
+        <p>
+        <center>Teaching with Technology</center>    
+        </p>
+    </div>
+    <div class="left">
+        
+        {% if is_logged_in == 0 %} 
+        <p>You are not logged in</p>
+            <p><a href="#" id ="a_log_in">Live Learning Login</a></p>
+            <p><a href="/" id ="a_log_in">Home page</a></p>
+        {% else %}
+            <p>Welcome, {{ username }} Logined as {{ logintype }}</p>
+            {% if logintype == 'teacher' %}
+                <p><a href="/teacher_profile_info/" >Profile</a></p>
+                <p><a href="/teacher_prev_lectures/" >Past Lecture details</a></p>
+                <p><a href="/teacher_new_lectures/" >Upcoming Lecture details</a></p>
+                <p><a href="/teacher_create_lecture/" >Create new lectures</a></p>
+            {% else %}
+                <p><a href="/student_profile_info/" >Profile</a></p>
+                <p><a href="/student_prev_lectures/" >Past Lecture details</a></p>
+                <p><a href="/student_new_lectures/" >Upcoming Lecture details</a></p>
+            {% endif %}
+            <p><a href="/log_out/" id ="a_log_out">Log out</a></p>
+        {% endif %}
+        <p><a href="/">Main Page</a></p>
+          
+    </div>
+    <div class="main">
+    {% if error_message != 'None' %}
+        <div><p>{{ error_message }}</p></div>
+    {% endif %}
         {% if is_logged_in == 0 %}
-	    <form name="LoginForm" action="/login_page/" method="post">
-		{% csrf_token %}
-			Username: <input type="text" id="username" name="username"  placeholder="Username"> <br />
-			Password: <input type="password" id="password" name="password"  placeholder="Password"> <br />
-			Select Type: 	<input type="radio" name="logintype" value="student" checked> Student<br>
-  					<input type="radio" name="logintype" value="teacher"> Teacher<br>
-			<button type="submit">Login</button>
-		</form>
+        <form name="LoginForm" action="/login_page/" method="post">
+        {% csrf_token %}
+            Username: <input type="text" id="username" name="username"  placeholder="Username"> <br />
+            Password: <input type="password" id="password" name="password"  placeholder="Password"> <br />
+            Select Type:     <input type="radio" name="logintype" value="student" checked> Student<br>
+                      <input type="radio" name="logintype" value="teacher"> Teacher<br>
+            <button type="submit">Login</button>
+        </form>
         {% else %}
         <p>
-            You are already logged in. Click <a href="/login_combined_app/">here<a> to go to the lecture page.<br />
+            You are already logged in.
             Alternatively, click <a href="/log_out/">here<a> to Log out. 
         <p>
         {% endif %}
-	</div>
-	<div class="topleft">
-		<p>
-	    <center>Dharna Icon here</center>
-		</p>
-	</div>
+    </div>
+    <div class="topleft">
+        <p>
+        <center>Dharna Icon here</center>
+        </p>
+    </div>
     </BODY>
 <script type="text/javascript"> 
 /*function funcMissionStatement(){
-	var el = document.getElementById('foo');
-	var el = document.getElementById('foo');
-	var el = document.getElementById('foo');
-	var el = document.getElementById('foo');
-	var el = document.getElementById('foo'); 
+    var el = document.getElementById('foo');
+    var el = document.getElementById('foo');
+    var el = document.getElementById('foo');
+    var el = document.getElementById('foo');
+    var el = document.getElementById('foo'); 
 }
 */
 window.onload = function(){
-	var divMS = document.getElementById("a_missionStatement");
-	var divDharna = document.getElementById("a_dharna_v1_0");
-	var divContact = document.getElementById("a_contactUs");
-	var divDemo = document.getElementById("a_liveDemo");
+    var divMS = document.getElementById("a_missionStatement");
+    var divDharna = document.getElementById("a_dharna_v1_0");
+    var divContact = document.getElementById("a_contactUs");
+    var divDemo = document.getElementById("a_liveDemo");
 
-	divMS.onclick = function(){
-		document.getElementById("dharna_v1_0").style.display="none";
-		document.getElementById("missionStatement").style.display="block";
-		document.getElementById("contactUs").style.display="none";
-		document.getElementById("liveDemo").style.display="none";
-		return false;
-	};
-	divDharna.onclick = function(){
-		//alert("hello");
-		document.getElementById("dharna_v1_0").style.display="block";
-		document.getElementById("missionStatement").style.display="none";
-		document.getElementById("contactUs").style.display="none";
-		document.getElementById("liveDemo").style.display="none";
-		return false;
-	};
-	divContact.onclick = function(){
-		document.getElementById("dharna_v1_0").style.display="none";
-		document.getElementById("missionStatement").style.display="none";
-		document.getElementById("contactUs").style.display="block";
-		document.getElementById("liveDemo").style.display="none";
-		return false;
-	};
-	divDemo.onclick = function(){
-		document.getElementById("dharna_v1_0").style.display="none";
-		document.getElementById("missionStatement").style.display="none";
-		document.getElementById("contactUs").style.display="none";
-		document.getElementById("liveDemo").style.display="block";
-		return false;
-	};
+    divMS.onclick = function(){
+        document.getElementById("dharna_v1_0").style.display="none";
+        document.getElementById("missionStatement").style.display="block";
+        document.getElementById("contactUs").style.display="none";
+        document.getElementById("liveDemo").style.display="none";
+        return false;
+    };
+    divDharna.onclick = function(){
+        //alert("hello");
+        document.getElementById("dharna_v1_0").style.display="block";
+        document.getElementById("missionStatement").style.display="none";
+        document.getElementById("contactUs").style.display="none";
+        document.getElementById("liveDemo").style.display="none";
+        return false;
+    };
+    divContact.onclick = function(){
+        document.getElementById("dharna_v1_0").style.display="none";
+        document.getElementById("missionStatement").style.display="none";
+        document.getElementById("contactUs").style.display="block";
+        document.getElementById("liveDemo").style.display="none";
+        return false;
+    };
+    divDemo.onclick = function(){
+        document.getElementById("dharna_v1_0").style.display="none";
+        document.getElementById("missionStatement").style.display="none";
+        document.getElementById("contactUs").style.display="none";
+        document.getElementById("liveDemo").style.display="block";
+        return false;
+    };
 
 }
 </script>

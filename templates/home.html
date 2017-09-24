@@ -25,12 +25,16 @@
             <p><a href="/register_page"> </a></p>
         {% else %}
             <p>Welcome, {{ username }} Logined as {{ logintype }}</p>
-            {% if logintype == 'teacher'%}
-                <p><a href=/teacher_profile_info/>Click Here</a> to view your profile.</p>
-            {%endif%}
-            {% if logintype == 'student'%}
-                <p><a href=/student_profile_info/>Click Here</a> to view your profile.</p>
-            {%endif%}
+            {% if logintype == 'teacher' %}
+                <p><a href="/teacher_profile_info/" >Profile</a></p>
+                <p><a href="/teacher_prev_lectures/" >Past Lecture details</a></p>
+                <p><a href="/teacher_new_lectures/" >Upcoming Lecture details</a></p>
+                <p><a href="/teacher_create_lecture/" >Create new lectures</a></p>
+            {% else %}
+                <p><a href="/student_profile_info/" >Profile</a></p>
+                <p><a href="/student_prev_lectures/" >Past Lecture details</a></p>
+                <p><a href="/student_new_lectures/" >Upcoming Lecture details</a></p>
+            {% endif %}
             <p><a href="/log_out/" id ="a_log_out">Log out</a></p>
         {% endif %}
 	</div>

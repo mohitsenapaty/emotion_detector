@@ -138,6 +138,8 @@ class LectureStudent(models.Model):
     present = models.CharField(max_length=1)
     attention_percent = models.FloatField(blank=True, null=True)
     emotion_data = models.CharField(max_length=500, blank=True, null=True)
+    attention_graph_link = models.CharField(max_length=1000, blank=True, null=True)
+    emotion_graph_link = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
         managed = False

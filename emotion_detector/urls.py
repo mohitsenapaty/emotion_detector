@@ -25,6 +25,8 @@ urlpatterns = [
     url(r'^emotion_detector/', views.emotion_detector, name='emotion_detector'),
     url(r'^get_attention_data/', views.get_attention_data, name='get_attention_data'),
     url(r'^get_emotion_data/',views.get_emotion_data, name='get_emotion_data'),
+    url(r'^get_attention_data_test/', views.get_attention_data_test, name='get_attention_data_test'),
+    url(r'^get_emotion_data_test/',views.get_emotion_data_test, name='get_emotion_data_test'),
     url(r'^combined_app/', views.combined_app, name='combined_app'),
     url(r'^combined_app_live/', views.combined_app_live, name='combined_app_live'),
     url(r'^login_page/', views.login_page, name='login_page'),
@@ -44,4 +46,5 @@ urlpatterns = [
     url(r'^student_new_lectures/', views.student_new_lectures, name='student_new_lectures'),
     url(r'^attend_lecture_student/(?P<lecture_id1>\d+)/', views.attend_lecture_student, name='attend_lecture_student'),
     url(r'^start_lecture_teacher/(?P<lecture_id1>\d+)/', views.start_lecture_teacher, name='start_lecture_teacher'),
+    url(r'^login_combined_app_rl/', views.login_combined_app_rl, name='login_combined_app_rl'),
 ]

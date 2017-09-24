@@ -12,7 +12,9 @@ from pytz import timezone
 from .models import *
 import MySQLdb 
 import dateutil.parser
+import upload_to_dropbox
 
+DROPBOX_ACCESS_TOKEN = "t0-WvXEmgaAAAAAAAAAABkLheYrQk8TjSZBJHBgkn1nQ3X0K6z0H-P_zABFzFY9E"
 
 glob_float_att_array = []
 glob_att_id_ = 0
@@ -162,9 +164,67 @@ def get_attention_data(request):
     plt.gcf().clear()
     glob_att_file = plt_file_name
     global glob_emo_file
+    transferData = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
     send_email.send_email("date:val time:val", "dharna graph for user", [glob_att_file, glob_emo_file])
+    transferData = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
+    transferData.upload_file(file_from="%s"%(glob_att_file), file_to="/dharna_app/%s"%(glob_att_file))
+    att_file_url = transferData.get_shared_file_url()
+        #upload emotion file
+    transferData1 = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
+    transferData1.upload_file(file_from=glob_emo_file, file_to="/dharna_app/%s"%(glob_emo_file))
+    emo_file_url = transferData1.get_shared_file_url()
+    print att_file_url, emo_file_url
     return HttpResponse("Success!")
 
+@csrf_exempt
+def get_attention_data_test(request):
+    #fromJs = json.loads(request.POST)
+    #print fromJs
+    #import pdb; pdb.set_trace();
+    att_array = request.POST.getlist(u'colAttentionData[]')
+    is_logged_in = 0
+    _username = request.session.get("username", "")
+    _id = request.session.get("id")
+    if not _username == "":
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+        #_username = 
+    else:
+        return HttpResponse("Failure")
+    float_att_array = []
+    id_ = 0
+    x_arr = []
+    for att in att_array:
+        float_att_array.append(float(att))
+        id_ += 1
+        x_arr.append(id_)
+    plt.plot(x_arr, att_array)
+    plt.xlabel("time in seconds")
+    plt.ylabel("attention level in percent")
+    plt_file_name = "attention_data_"
+    dt_timestamp = dt.datetime.fromtimestamp(time.time()).strftime("%Y_%m_%d_%H_%M_%S")
+    plt_file_name = _username + plt_file_name+dt_timestamp+".png"
+    plt.savefig(plt_file_name)
+    plt.gcf().clear()
+    glob_att_file = plt_file_name
+    global glob_emo_file
+    #try:
+    send_email.send_email("date:val time:val", "dharna graph for user", [glob_att_file, glob_emo_file])
+    sd_obj = StudentDetail.objects.get(student_id=_id)
+        #send_email.send_email_client(sd_obj.__dict__.get("email"),"date:val time:val", "dharna graph for user", [glob_att_file, glob_emo_file])
+        #upload attention file
+    print glob_att_file, glob_emo_file
+    transferData = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
+    transferData.upload_file(file_from="%s"%(glob_att_file), file_to="/dharna_app/%s"%(glob_att_file))
+    att_file_url = transferData.get_shared_file_url()
+        #upload emotion file
+    transferData1 = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
+    transferData1.upload_file(file_from=glob_emo_file, file_to="/dharna_app/%s"%(glob_emo_file))
+    emo_file_url = transferData1.get_shared_file_url()
+    #except:
+        #return HttpResponse("Failure!")
+    print att_file_url, emo_file_url
+    return HttpResponse("Success!")
 
 @csrf_exempt
 def get_emotion_data(request):
@@ -177,6 +237,78 @@ def get_emotion_data(request):
     if not _username == "":
         #return HttpResponseRedirect('/combined_app/')
         is_logged_in = 1
+    i_ = 0
+    j_ = 0
+    emo_dict = {"angry":[0], "sad":[0], "surprised":[0], "happy":[0]}
+    while (1):
+        flag = 0
+        for j_ in range(4):
+            qe_str = 'data['+str(i_)+"]["+str(j_)+"][emotion]"
+            qv_str = 'data['+str(i_)+"]["+str(j_)+"][value]"
+            emo_ = post_array.getlist(qe_str)
+            val_ = post_array.getlist(qv_str)
+            if emo_==None or len(emo_) == 0:
+                flag = 1
+                break
+            else:
+                emo_list = emo_dict.get(emo_[0])
+                if emo_list == None or len(emo_list) == 0:
+                    pass
+                else:
+                    emo_dict[emo_[0]].append(val_[0])
+
+        i_ = i_+1
+        if flag == 1:
+            break
+
+    #print emo_dict
+    #float_emotion_array = []
+    #id_ = 0
+    #x_arr = []
+    plot_key = []
+    for emo_key in emo_dict:
+        emo_arr = emo_dict[emo_key]
+        p_key = "y = "+emo_key
+        plot_key.append(emo_key)
+        float_emo_arr = []
+        x_arr = []
+        id_ = 0
+        for emo_val in emo_arr:
+            float_emo_arr.append(float(emo_val))
+            x_arr.append(id_)
+            id_+=1
+        plt.plot(x_arr, float_emo_arr)
+    plt.legend(plot_key, loc='upper left')
+
+
+    #    float_att_array.append(float(att))
+    #    id_ += 1
+    #    x_arr.append(id_)
+    #plt.plot(x_arr, att_array)
+    plt.xlabel("time in seconds")
+    plt.ylabel("weighted emotion value")
+    plt_file_name = "emotion_data_"
+    dt_timestamp = dt.datetime.fromtimestamp(time.time()).strftime("%Y_%m_%d_%H_%M_%S")
+    plt_file_name = _username + plt_file_name+dt_timestamp+".png"
+    plt.savefig(plt_file_name)
+    plt.gcf().clear()
+    global glob_emo_file
+    glob_emo_file = plt_file_name
+    return HttpResponse("Success!")
+
+@csrf_exempt
+def get_emotion_data_test(request):
+    #fromJs = json.loads(request.POST)
+    #print fromJs
+    #import pdb; pdb.set_trace();
+    post_array = request.POST
+    is_logged_in = 0
+    _username = request.session.get("username", "")
+    if not _username == "":
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+    else:
+        return HttpResponse("Failure")
     i_ = 0
     j_ = 0
     emo_dict = {"angry":[0], "sad":[0], "surprised":[0], "happy":[0]}
@@ -1004,7 +1136,7 @@ def create_lecture(my_dict, _id):
         lt_obj.save()
         st_objs = StudentDetail.objects.filter(school=s_obj, entity=e_obj)
         for st_obj in st_objs:
-            sl_obj = LectureStudent(student=st_obj.student, lecture=lt_obj, present="N", attention_percent=0, emotion_data="no data")
+            sl_obj = LectureStudent(student=st_obj.student, lecture=lt_obj, present="N", attention_percent=0, emotion_data="no data", attention_graph_link="none", emotion_graph_link="none")
             sl_obj.save()
         return {"success":1, "msg":"Lecture Created."}
     except:
@@ -1030,7 +1162,12 @@ def teacher_prev_lectures(request):
             _c_tm_temp = dt.datetime.now(timezone('UTC')).strftime("%Y-%m-%d %H:%M:%S")
             _c_tm = dateutil.parser.parse(_c_tm_temp)
             _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
+            _o_tm_temp = lt_obj.__dict__.get("lecture_end_time").astimezone(timezone('Asia/Calcutta'))
+            _s_tm_temp = lt_obj.__dict__.get("lecture_start_time").astimezone(timezone('Asia/Calcutta'))
             if _o_tm < _c_tm:
+                tmp_dict = lt_obj.__dict__
+                tmp_dict["lecture_start_time"] = dateutil.parser.parse(_s_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
+                tmp_dict["lecture_end_time"] = dateutil.parser.parse(_o_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
                 disp_arr.append(lt_obj.__dict__)
         template = 'teacher_prev_lectures.html'
         returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
@@ -1056,8 +1193,13 @@ def teacher_new_lectures(request):
             _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta')).strftime("%Y-%m-%d %H:%M:%S")
             _c_tm = dateutil.parser.parse(_c_tm_temp)
             _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
+            _o_tm_temp = lt_obj.__dict__.get("lecture_end_time").astimezone(timezone('Asia/Calcutta'))
+            _s_tm_temp = lt_obj.__dict__.get("lecture_start_time").astimezone(timezone('Asia/Calcutta'))
             if _o_tm >= _c_tm:
-                disp_arr.append(lt_obj.__dict__)
+                tmp_dict = lt_obj.__dict__
+                tmp_dict["lecture_start_time"] = dateutil.parser.parse(_s_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
+                tmp_dict["lecture_end_time"] = dateutil.parser.parse(_o_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
+                disp_arr.append(tmp_dict)
         #print disp_arr
         template = 'teacher_new_lectures.html'
         returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'teacher_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
@@ -1084,6 +1226,8 @@ def student_prev_lectures(request):
             tl_obj = lt_obj.teacher
             _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta')).strftime("%Y-%m-%d %H:%M:%S")
             _c_tm = dateutil.parser.parse(_c_tm_temp)
+            _o_tm_temp = lt_obj.__dict__.get("lecture_end_time").astimezone(timezone('Asia/Calcutta'))
+            _s_tm_temp = lt_obj.__dict__.get("lecture_start_time").astimezone(timezone('Asia/Calcutta'))
             _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
             if _o_tm < _c_tm:
                 temp_dict = {}
@@ -1095,11 +1239,13 @@ def student_prev_lectures(request):
                 temp_dict["subject"] = lt_obj_dict.get("subject")
                 temp_dict["topic"] = lt_obj_dict.get("topic")
                 temp_dict["description"] = lt_obj_dict.get("description")
-                temp_dict["lecture_start_time"] = lt_obj_dict.get("lecture_start_time")
-                temp_dict["lecture_end_time"] = lt_obj_dict.get("lecture_end_time")
+                temp_dict["lecture_start_time"] = dateutil.parser.parse(_s_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
+                temp_dict["lecture_end_time"] = dateutil.parser.parse(_o_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
                 temp_dict["present"] = ls_obj_dict.get("present")
                 temp_dict["attention_percent"] = ls_obj_dict.get("attention_percent")
                 temp_dict["emotion_data"] = ls_obj_dict.get("emotion_data")
+                temp_dict["attention_graph_link"] = ls_obj_dict.get("attention_graph_link")
+                temp_dict["emotion_graph_link"] = ls_obj_dict.get("emotion_graph_link")
                 disp_arr.append(temp_dict)
         template = 'student_prev_lectures.html'
         returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'student_id':request.session.get("id"),'logintype':request.session.get('type'), 'len':len(disp_arr), 'disp_arr':disp_arr}
@@ -1127,9 +1273,11 @@ def student_new_lectures(request):
             _c_tm_temp = dt.datetime.now(timezone('Asia/Calcutta'))
             _c_tm = dateutil.parser.parse(_c_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
             _o_tm_temp = lt_obj.__dict__.get("lecture_end_time").astimezone(timezone('Asia/Calcutta'))
+            _s_tm_temp = lt_obj.__dict__.get("lecture_start_time").astimezone(timezone('Asia/Calcutta'))
             _o_tm = dateutil.parser.parse(lt_obj.__dict__.get("lecture_end_time").strftime("%Y-%m-%d %H:%M:%S"))
             #print _c_tm, _o_tm, _c_tm_temp, _o_tm_temp
             if _o_tm >= _c_tm:
+                #print _c_tm, _o_tm, _c_tm_temp, dateutil.parser.parse(_o_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
                 temp_dict = {}
                 lt_obj_dict = lt_obj.__dict__
                 ls_obj_dict = ls_obj.__dict__
@@ -1139,11 +1287,13 @@ def student_new_lectures(request):
                 temp_dict["subject"] = lt_obj_dict.get("subject")
                 temp_dict["topic"] = lt_obj_dict.get("topic")
                 temp_dict["description"] = lt_obj_dict.get("description")
-                temp_dict["lecture_start_time"] = lt_obj_dict.get("lecture_start_time")
-                temp_dict["lecture_end_time"] = lt_obj_dict.get("lecture_end_time")
+                temp_dict["lecture_start_time"] = dateutil.parser.parse(_s_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
+                temp_dict["lecture_end_time"] = dateutil.parser.parse(_o_tm_temp.strftime("%Y-%m-%d %H:%M:%S"))
                 temp_dict["present"] = ls_obj_dict.get("present")
                 temp_dict["attention_percent"] = ls_obj_dict.get("attention_percent")
                 temp_dict["emotion_data"] = ls_obj_dict.get("emotion_data")
+                temp_dict["attention_graph_link"] = ls_obj_dict.get("attention_graph_link")
+                temp_dict["emotion_graph_link"] = ls_obj_dict.get("emotion_graph_link")
                 disp_arr.append(temp_dict)
         #print disp_arr
         template = 'student_new_lectures.html'
@@ -1190,3 +1340,172 @@ def start_lecture_teacher(request, lecture_id1):
         return HttpResponseRedirect('/')
 #end region start lecture teacher
 
+#start region login combined app rl
+def login_combined_app_rl(request):
+    context = locals()
+    from ipware.ip import get_real_ip
+    ip_arr = []
+    ip_real = get_real_ip(request)
+    if ip_real is not None:
+        ip_arr.append(ip_real)
+    else:
+        ip_arr.append('')
+    
+    from ipware.ip import get_ip
+    #ip_arr = []
+    ip = get_ip(request)
+    if ip is not None:
+        ip_arr.append(ip)
+    else:
+        ip_arr.append('')
+
+    f1 = open("ip.txt", "a")
+    for x in ip_arr:
+        f1.write(x)
+        f1.write('combined app\n')
+    f1.close()
+
+    is_logged_in = 0
+    if not request.session.get("username") == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+    template = 'login_combined_app_rl.html'
+    returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'lecture_id':request.session.get('lecture_id')}
+    return render(request, template, returnDict)
+#end region login combined app rl
+
+#start get emotion data rl 
+@csrf_exempt
+def get_emotion_data_rl(request):
+    #fromJs = json.loads(request.POST)
+    #print fromJs
+    #import pdb; pdb.set_trace();
+    post_array = request.POST
+    is_logged_in = 0
+    _username = request.session.get("username", "")
+    if not _username == "":
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+    else:
+        return HttpResponse("Failure")
+    i_ = 0
+    j_ = 0
+    emo_dict = {"angry":[0], "sad":[0], "surprised":[0], "happy":[0]}
+    while (1):
+        flag = 0
+        for j_ in range(4):
+            qe_str = 'data['+str(i_)+"]["+str(j_)+"][emotion]"
+            qv_str = 'data['+str(i_)+"]["+str(j_)+"][value]"
+            emo_ = post_array.getlist(qe_str)
+            val_ = post_array.getlist(qv_str)
+            if emo_==None or len(emo_) == 0:
+                flag = 1
+                break
+            else:
+                emo_list = emo_dict.get(emo_[0])
+                if emo_list == None or len(emo_list) == 0:
+                    pass
+                else:
+                    emo_dict[emo_[0]].append(val_[0])
+
+        i_ = i_+1
+        if flag == 1:
+            break
+
+    #print emo_dict
+    #float_emotion_array = []
+    #id_ = 0
+    #x_arr = []
+    plot_key = []
+    for emo_key in emo_dict:
+        emo_arr = emo_dict[emo_key]
+        p_key = "y = "+emo_key
+        plot_key.append(emo_key)
+        float_emo_arr = []
+        x_arr = []
+        id_ = 0
+        for emo_val in emo_arr:
+            float_emo_arr.append(float(emo_val))
+            x_arr.append(id_)
+            id_+=1
+        plt.plot(x_arr, float_emo_arr)
+    plt.legend(plot_key, loc='upper left')
+
+
+    #    float_att_array.append(float(att))
+    #    id_ += 1
+    #    x_arr.append(id_)
+    #plt.plot(x_arr, att_array)
+    plt.xlabel("time in seconds")
+    plt.ylabel("weighted emotion value")
+    plt_file_name = "emotion_data_"
+    dt_timestamp = dt.datetime.fromtimestamp(time.time()).strftime("%Y_%m_%d_%H_%M_%S")
+    plt_file_name = _username + plt_file_name+dt_timestamp+".png"
+    plt.savefig(plt_file_name)
+    plt.gcf().clear()
+    global glob_emo_file
+    glob_emo_file = plt_file_name
+    return HttpResponse("Success!")
+#end region get emotion data rl    
+
+#start region get attention data rl
+@csrf_exempt
+def get_attention_data_rl(request):
+    #fromJs = json.loads(request.POST)
+    #print fromJs
+    #import pdb; pdb.set_trace();
+    att_array = request.POST.getlist(u'colAttentionData[]')
+    is_logged_in = 0
+    _username = request.session.get("username", "")
+    _id = request.session.get("id")
+    if not _username == "":
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+        #_username = 
+    else:
+        return HttpResponse("Failure")
+    float_att_array = []
+    id_ = 0
+    x_arr = []
+    for att in att_array:
+        float_att_array.append(float(att))
+        id_ += 1
+        x_arr.append(id_)
+    plt.plot(x_arr, att_array)
+    plt.xlabel("time in seconds")
+    plt.ylabel("attention level in percent")
+    plt_file_name = "attention_data_"
+    dt_timestamp = dt.datetime.fromtimestamp(time.time()).strftime("%Y_%m_%d_%H_%M_%S")
+    plt_file_name = _username + plt_file_name+dt_timestamp+".png"
+    plt.savefig(plt_file_name)
+    plt.gcf().clear()
+    glob_att_file = plt_file_name
+    global glob_emo_file
+    #try:
+    send_email.send_email("date:val time:val", "dharna graph for user", [glob_att_file, glob_emo_file])
+    sd_obj = StudentDetail.objects.get(student_id=_id)
+        #send_email.send_email_client(sd_obj.__dict__.get("email"),"date:val time:val", "dharna graph for user", [glob_att_file, glob_emo_file])
+        #upload attention file
+    print glob_att_file, glob_emo_file
+    transferData = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
+    transferData.upload_file(file_from="%s"%(glob_att_file), file_to="/dharna_app/%s"%(glob_att_file))
+    att_file_url = transferData.get_shared_file_url()
+        #upload emotion file
+    transferData1 = upload_to_dropbox.upload_to_dropbox(DROPBOX_ACCESS_TOKEN)
+    transferData1.upload_file(file_from=glob_emo_file, file_to="/dharna_app/%s"%(glob_emo_file))
+    emo_file_url = transferData1.get_shared_file_url()
+    #make database queries.
+    l_id = request.session.get("lecture_id")
+    ls_obj = LectureStudent.objects.get(lecture=LectureTeacher.objects.get(lecture_id=l_id),student=StudentLogin.objects.get(student_id=_id))
+    ls_obj.present="Y"
+    #calculate attention percent
+    #calculate emotion result
+    ls_obj.attention_graph_link=att_file_url
+    ls_obj.emotion_graph_link=emo_file_url
+    ls_obj.save()
+    #except:
+        #return HttpResponse("Failure!")
+    return HttpResponse("Success!")
+#end region get attention data rl
+    

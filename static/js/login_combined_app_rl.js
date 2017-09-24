@@ -229,7 +229,7 @@ $(document).ready(function(){
         $.ajax({
                 type: "POST",
                 data: param,
-                url: "../get_emotion_data_test/", 
+                url: "../get_emotion_data/", 
                 
                 success: function(result){
                     //alert(result);
@@ -237,7 +237,7 @@ $(document).ready(function(){
                     $.ajax({
                             type: "POST",
                             data: {colAttentionData:colAttentionData},
-                            url: "../get_attention_data_test/", 
+                            url: "../get_attention_data/", 
                             
                             success: function(result){
                                 alert(result);

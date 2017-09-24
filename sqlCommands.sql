@@ -19,6 +19,7 @@ create table teacher_detail(teacher_id MEDIUMINT NOT NULL UNIQUE, first_name VAR
 create index teacher_id1 on teacher_detail(teacher_id);
 ALTER TABLE teacher_detail ADD id INT PRIMARY KEY AUTO_INCREMENT;
 create table lecture_teacher(lecture_id BIGINT NOT NULL AUTO_INCREMENT, teacher_id MEDIUMINT NOT NULL, entity_id MEDIUMINT NOT NULL, school_id MEDIUMINT NOT NULL, lecture_start_time TIMESTAMP, lecture_end_time TIMESTAMP, subject VARCHAR(50), topic VARCHAR(50), description VARCHAR(400), PRIMARY KEY (lecture_id), CONSTRAINT fklt_teacher_id FOREIGN KEY (teacher_id) REFERENCES teacher_login(teacher_id), CONSTRAINT fklt_entity_id FOREIGN KEY (entity_id) REFERENCES entity_table(entity_id), CONSTRAINT fklt_school_id FOREIGN KEY (school_id) REFERENCES school_details(school_id));
+alter table lecture_teacher add status varchar(1) default 'N';
 create index lecture_id on lecture_teacher(lecture_id);
 create index teacher_id2 on lecture_teacher(teacher_id);
 create index school_id1 on lecture_teacher(school_id);
