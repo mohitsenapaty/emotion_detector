@@ -12,7 +12,16 @@
         <link href="{% static 'styles/emotion_detector/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
         <style>
             @import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
-            
+            .loader {
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                background: url('/static/media/page-loader.gif') 50% 50% no-repeat rgb(249,249,249);
+                opacity: .8;
+            }
             body {
                 font-family: 'Lato';
                 background-color: #f0f0f0;
@@ -146,8 +155,14 @@
     </HEAD>
 
     <BODY LANG="en-US" LINK="#0000ff" DIR="LTR">
+        <div class="loader"></div>
         <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script type="text/javascript">
+        $(window).load(function() {
+	        $(".loader").fadeOut("slow");
+        })
+        </script>
     	<script src="{% static 'js/emotion_detector/decorator_js/libs/utils.js' %}"></script>
         <script src="{% static 'js/emotion_detector/decorator_js/libs/Stats.js' %}"></script>
         <script src="{% static 'js/emotion_detector/decorator_js/libs/d3.min.js' %}"></script>
@@ -165,7 +180,7 @@
             <h3>Chat</h3>
             <div>
                 <div id="displayChatMessages" style="overflow-y: auto; height:90%; word-wrap: break-word;"></div>
-                <div id="sendChatMessages" style="position:absolute; bottom:0%;">
+                <div id="sendChatMessages" style="position:relative; bottom:0%;">
                 {% if is_logged_in == 1 %}
                     {% csrf_token %}
                     <textarea rows="1" cols="43" id="usertext" placeholder="type here to ask doubt"></textarea>
@@ -173,14 +188,14 @@
                 <p>
                     You are Not logged in. Click <a href="/login_page/">here<a> to go to the lecture page.<br />
                     Alternatively, click <a href="/">here<a> to Go to the main page. 
-                <p>
+                </p>
                 {% endif %}
                 </div>
             </div>
         </div>
     </div>
     <div id = "loginInfo" style="position:absolute; top:97%; left:2%">
-	Username:{% if username %} {{ username }} {% endif %}
+	Username:{% if username %} {{ username }} {% endif %} Done with the Lecture? <a href='/end_lecture_student/'>Click here</a> to end the lecture.
     </div>
     <div id="mydiv" style="position:absolute; top:2%; left:60%" >
         <h1 style="color:#C0C0C0" align="right" id="calibHeader">
@@ -244,7 +259,7 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js"></script>
         <script src="{% static 'js/attention_detector/webgazer.js' %}"></script>
-        <script src="{% static 'js/login_combined_app_test.js' %}"> </script>
+        <script src="{% static 'js/login_combined_app_test.js' %}?v=0001"> </script>
         <script>
         var player;
         var playing = 0;

@@ -29,6 +29,10 @@
 	  		<p><a href="#" id ="a_log_in">Live Learning Login</a></p>
 		{% else %}
 		<p>Welcome, {{ username }} Logined as {{ logintype }}</p>
+        <p><a href="/teacher_profile_info/" >Profile</a></p>
+        <p><a href="/teacher_prev_lectures/" >Past Lecture details</a></p>
+        <p><a href="/teacher_new_lectures/" >Upcoming Lecture details</a></p>
+        <p><a href="/teacher_create_lecture/" >Create new lectures</a></p>
 		<p><a href="/log_out/" id ="a_log_out">Log out</a></p>
 		{% endif %}
 		<p><a href="/">Main Page</a></p>

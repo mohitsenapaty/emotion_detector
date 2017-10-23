@@ -5,6 +5,7 @@ var globEmotionData;
 var colEmotionData = [];
 var started = 0;
 var midContentDiv = document.getElementById("midContent");
+var done_submitting = 0;
 
 window.setInterval(function(){
     if (started == 1 && globEmotionData !== false) colEmotionData.push(globEmotionData);
@@ -14,7 +15,8 @@ window.setInterval(function(){
 $( function() {
     $( "#accordion" ).accordion({
         collapsible: true,
-        heightStyle: "fill"
+        heightStyle: "fill",
+        animated: true,
     });
     $( "#accordion-resizer" ).resizable({
       //minHeight: 140,
@@ -209,6 +211,7 @@ $(document).ready(function(){
         msgText = e.data;
         $('#displayChatMessages').append(msgText+"<br/>");
         $('#usertext').val('');
+        $("#displayChatMessages").animate({ scrollTop: $('#displayChatMessages').prop("scrollHeight")}, 1000);
     }
     socket.onopen = function() {
         //socket.send($('#usertext').val());
@@ -254,6 +257,8 @@ $(document).ready(function(){
         });
         if (success == 2){
             alert("Success!");
+            //window.location.replace()
+            done_submitting = 1;
         }
         
     });
@@ -450,6 +455,11 @@ function sendAttentionData(){
 */
 
 $(document).ready(function(){
+    $(document).ajaxStart(function () {
+        $(".loader").fadeIn(1000);
+    }).ajaxStop(function () {
+        $(".loader").fadeOut(2000);
+    });
     $('#bSend').click(function(){
         //alert("clicked");
         $.ajax({
@@ -459,6 +469,7 @@ $(document).ready(function(){
                 
                 success: function(result){
                     alert(result);
+                    //window.location.replace()
                 },
                 error: function(xhr, textStatus, errorThrown){
                     alert('request failed');

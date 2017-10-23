@@ -47,4 +47,8 @@ urlpatterns = [
     url(r'^attend_lecture_student/(?P<lecture_id1>\d+)/', views.attend_lecture_student, name='attend_lecture_student'),
     url(r'^start_lecture_teacher/(?P<lecture_id1>\d+)/', views.start_lecture_teacher, name='start_lecture_teacher'),
     url(r'^login_combined_app_rl/', views.login_combined_app_rl, name='login_combined_app_rl'),
+    url(r'^error_page/', views.error_page, name='error_page'),
+    url(r'^ongoing_lecture_page/', views.ongoing_lecture_page, name='ongoing_lecture_page'),
+    url(r'^end_lecture_student/', views.end_lecture_student, name='end_lecture_student'),
+    url(r'^end_lecture_teacher/', views.end_lecture_teacher, name='end_lecture_teacher'),
 ]
