@@ -610,7 +610,7 @@ def login_combined_app(request):
         #return HttpResponseRedirect('/combined_app/')
         is_logged_in = 1
 
-    template = 'login_combined_app_test.html'
+    template = 'login_combined_app.html'
     returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username")}
     return render(request, template, returnDict)
 
