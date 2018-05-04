@@ -96,7 +96,7 @@ def home(request):
         #return HttpResponseRedirect('/combined_app/')
         is_logged_in = 1
 
-    template = 'home.html'
+    template = 'new_home.html'
     returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'logintype':request.session.get("type")}
     return render(request, template, returnDict)   
 

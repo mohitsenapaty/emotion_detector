@@ -1,0 +1,110 @@
+{% load static %}
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+    <HEAD>
+        <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+        <TITLE>Learn with Dharna</TITLE>
+        <link rel="stylesheet" type="text/css" href="{% static 'styles/common/new_home_style.css'%}">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="{% static 'js/new_home.js' %}?v=00000001"></script>
+    </HEAD>
+    <body>
+        <div class="header" id="myHeader">
+            <div class="main-header">
+            <h1>Learn With Dharna</h1>
+            </div>
+            <div class="header_links">
+                <h2>
+                <a href="/">Home</a> 
+                <a href="/team/">Team</a>
+                <a href="/contact/">Contact</a>
+                <a href="/blog/">Blog</a>
+                {% if is_logged_in == 0 %} 
+                <a href="/login_page/">Login</a>/<a href="/register_page/">Register</a>
+                {% else %}
+                {{ username }}
+                {% endif %}
+                </h2>
+            </div>
+            <!--div style="clear: both;"></div--> 
+        </div>
+
+        <div class="content">
+        <div class="bg_1">
+            <div class="in_bg_1">
+                <p><div class="img_logo"></div></p>
+                <p><div class="ms1"><center><h3>Read Our Mission Statement.</h3></center></div></p>
+                <p><div class="dw1"><center><h3>Download The Whitepaper (To Be Added).</h3></center></div></p>
+            </div>
+        </div>
+        <div class="pitch">
+            <!-- Things here will be row wise and column wise-->
+            <div class="pitch_row_1">
+                <p><div class="pr1_colhead"><center><h1>Bringing Out Innovation In Learning Methodology</h1><center></div></p>
+                <p><div class="pr1_coltext"><center>There will be some placeholder text here</center></div></p>
+            </div>
+            <div class="pitch_row_2">
+                <div class="pr2_col1_icon"></div>
+                <div class="pr2_col1">
+                    <p><div class="pr2_col1_head"><center><h1>Live and Pre-Recorded Lecture Video</h1><center></div></p>
+                    <p><div class="pr2_col1_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+                <div class="pr2_col2_icon"></div>
+                <div class="pr2_col2">
+                    <p><div class="pr2_col2_head"><center><h1>Realtime Learner Feedback</h1><center></div></p>
+                    <p><div class="pr2_col2_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+            </div>
+            <div class="pitch_row_3">
+                <div class="pr3_col1_icon"></div>
+                <div class="pr3_col1">
+                    <p><div class="pr3_col1_head"><center><h1>Graphs and Statistics</h1><center></div></p>
+                    <p><div class="pr3_col1_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+                <div class="pr3_col2_icon"></div>
+                <div class="pr3_col2">
+                    <p><div class="pr3_col2_head"><center><h1>Realtime Alert for Teachers</h1><center></div></p>
+                    <p><div class="pr3_col2_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+            </div>
+            
+        </div>
+        <div class="benefits_img">
+            <div class="benefits_row_1">
+                <p><div class="br1_colhead"><center><h1>Why Dharna?</h1><center></div></p>
+                <p><div class="br1_coltext"><center>There will be some placeholder text here</center></div></p>
+            </div>
+            <div class="benefits_row_2">
+                <div class="br2_col1">
+                    <!--p><div class="br2_col1_icon"></div></p-->
+                    <center><img src="{% static '/media/emotion_detection/icn_classroom_access.png' %}" height = "200" width = "200"/></center>
+                    <p><div class="br2_col1_head"><center><h1>Access</h1><center></div></p>
+                    <p><div class="br2_col1_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+                <div class="br2_col2">
+                    <!--p><div class="br2_col2_icon"></div></p-->
+                    <center><img src="{% static '/media/emotion_detection/icn_chat1.png' %}" height="200" width="200"/></center>
+                    <p><div class="br2_col2_head"><center><h1>Realtime help through Chat</h1><center></div></p>
+                    <p><div class="br2_col2_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+                <div class="br2_col3">
+                    <!--p><div class="br2_col3_icon"></div></p-->
+                    <center><img src="{% static '/media/emotion_detection/icn_selfasses.png' %}" height="200" width="200"/></center>
+                    <p><div class="br2_col3_head"><center><h1>Self-Evaluation</h1><center></div></p>
+                    <p><div class="br2_col3_text"><center>There will be some placeholder text here</center></div></p>
+                </div>
+            </div>
+        </div>
+        <div class="roadmap">
+            <div class="roadmap_row_1">
+                <p><div class="rr1_colhead"><center><h1>Our Roadmap and Development Target</h1><center></div></p>
+                <p><div class="rr1_coltext"><center>There will be some placeholder text here</center></div></p>
+            </div>
+        </div>
+        </div>
+        <div class="footer">
+            This is some sample Text.
+        </div>
+    </body>
+</html>
