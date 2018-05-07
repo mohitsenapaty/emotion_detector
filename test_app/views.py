@@ -98,7 +98,110 @@ def home(request):
 
     template = 'new_home.html'
     returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'logintype':request.session.get("type")}
-    return render(request, template, returnDict)   
+    return render(request, template, returnDict) 
+
+
+def team(request):
+    context = locals()
+    from ipware.ip import get_real_ip
+    ip_arr = []
+    ip_real = get_real_ip(request)
+    if ip_real is not None:
+        ip_arr.append(ip_real)
+    else:
+        ip_arr.append('')
+    
+    from ipware.ip import get_ip
+    #ip_arr = []
+    ip = get_ip(request)
+    if ip is not None:
+        ip_arr.append(ip)
+    else:
+        ip_arr.append('')
+
+    f1 = open("ip.txt", "a")
+    for x in ip_arr:
+        f1.write(x)
+        f1.write('home\n')
+    f1.close()
+
+    is_logged_in = 0
+    if not request.session.get("username") == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+    template = 'team.html'
+    returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'logintype':request.session.get("type")}
+    return render(request, template, returnDict) 
+
+
+def live_demo(request):
+    context = locals()
+    from ipware.ip import get_real_ip
+    ip_arr = []
+    ip_real = get_real_ip(request)
+    if ip_real is not None:
+        ip_arr.append(ip_real)
+    else:
+        ip_arr.append('')
+    
+    from ipware.ip import get_ip
+    #ip_arr = []
+    ip = get_ip(request)
+    if ip is not None:
+        ip_arr.append(ip)
+    else:
+        ip_arr.append('')
+
+    f1 = open("ip.txt", "a")
+    for x in ip_arr:
+        f1.write(x)
+        f1.write('home\n')
+    f1.close()
+
+    is_logged_in = 0
+    if not request.session.get("username") == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+    template = 'live_demo.html'
+    returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'logintype':request.session.get("type")}
+    return render(request, template, returnDict) 
+
+
+def contact(request):
+    context = locals()
+    from ipware.ip import get_real_ip
+    ip_arr = []
+    ip_real = get_real_ip(request)
+    if ip_real is not None:
+        ip_arr.append(ip_real)
+    else:
+        ip_arr.append('')
+    
+    from ipware.ip import get_ip
+    #ip_arr = []
+    ip = get_ip(request)
+    if ip is not None:
+        ip_arr.append(ip)
+    else:
+        ip_arr.append('')
+
+    f1 = open("ip.txt", "a")
+    for x in ip_arr:
+        f1.write(x)
+        f1.write('home\n')
+    f1.close()
+
+    is_logged_in = 0
+    if not request.session.get("username") == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+    template = 'contact.html'
+    returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username"), 'logintype':request.session.get("type")}
+    return render(request, template, returnDict) 
+
 
 def emotion_detector(request):
     context = locals()

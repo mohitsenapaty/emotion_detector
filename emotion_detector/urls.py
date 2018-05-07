@@ -51,4 +51,7 @@ urlpatterns = [
     url(r'^ongoing_lecture_page/', views.ongoing_lecture_page, name='ongoing_lecture_page'),
     url(r'^end_lecture_student/', views.end_lecture_student, name='end_lecture_student'),
     url(r'^end_lecture_teacher/', views.end_lecture_teacher, name='end_lecture_teacher'),
+    url(r'^team/', views.team, name='team'),
+    url(r'^live_demo/', views.live_demo, name='live_demo'),
+    url(r'^contact/', views.contact, name='contact'),
 ]
