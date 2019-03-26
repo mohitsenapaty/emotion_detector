@@ -522,6 +522,41 @@ def combined_app(request):
     returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username")}
     return render(request, template, returnDict)
 
+
+def combined_app_new(request):
+    context = locals()
+    from ipware.ip import get_real_ip
+    ip_arr = []
+    ip_real = get_real_ip(request)
+    if ip_real is not None:
+        ip_arr.append(ip_real)
+    else:
+        ip_arr.append('')
+   
+    from ipware.ip import get_ip
+    #ip_arr = []
+    ip = get_ip(request)
+    if ip is not None:
+        ip_arr.append(ip)
+    else:
+        ip_arr.append('')
+
+    f1 = open("ip.txt", "a")
+    for x in ip_arr:
+        f1.write(x)
+        f1.write('combined app\n')
+    f1.close()
+
+    is_logged_in = 0
+    if not request.session.get("username") == None:
+        #return HttpResponseRedirect('/combined_app/')
+        is_logged_in = 1
+
+    template = 'combined_app_new.html'
+    returnDict = {'is_logged_in':is_logged_in, 'username':request.session.get("username")}
+    return render(request, template, returnDict)
+
+
 def combined_app_live(request):
     context = locals()
     from ipware.ip import get_real_ip

@@ -88,6 +88,16 @@ body {
     max-width: 50%;
 }
 
+.br2_col1_icon:before{
+    content: url("/static/media/emotion_detection/icn_access.png");
+    position: relative;
+    //left: 10%;
+    //top: 10%;
+    //width: 50%;
+    float: top;
+    max-width: 50%;
+}
+
 .br2_col1_head{
     position: relative;
 }
@@ -104,6 +114,14 @@ body {
     max-width: 25%;
 }
 
+.br2_col2_icon:before{
+    content: url("/static/media/emotion_detection/icn_chat1.png");
+    position: relative;
+    left: 40%;
+    //top: 10%;
+    max-width: 25%;
+}
+
 .br2_col2_head{
     position: relative;
 }
@@ -113,6 +131,13 @@ body {
 }
 
 .br2_col3_icon{
+    content: url("/static/media/emotion_detection/icn_selfasses.png");
+    position: relative;
+    left: 70%;
+    max-width: 25%;
+}
+
+.br2_col3_icon:before{
     content: url("/static/media/emotion_detection/icn_selfasses.png");
     position: relative;
     left: 70%;
@@ -171,6 +196,22 @@ body {
     max-width: 5%;
 }
 
+.pr2_col1_icon:before{
+    content: url("/static/media/emotion_detection/icn_stream.png");
+    position: absolute;
+    left: 8%;
+    //top: 10%;
+    max-width: 5%;
+}
+
+.pr2_col2_icon:before{
+    content: url("/static/media/emotion_detection/icn_feedback.png");
+    position: absolute;
+    left: 58%;
+    //top: 10%;
+    max-width: 5%;
+}
+
 .pr2_col1{
     position: absolute;
     left: 15%;
@@ -194,6 +235,22 @@ body {
 }
 
 .pr3_col2_icon{
+    content: url("/static/media/emotion_detection/icn_alert.png");
+    position: absolute;
+    left: 58%;
+    //top: 10%;
+    max-width: 5%;
+}
+
+.pr3_col1_icon:before{
+    content: url("/static/media/emotion_detection/icn_graph.png");
+    position: absolute;
+    left: 8%;
+    //top: 10%;
+    max-width: 5%;
+}
+
+.pr3_col2_icon:before{
     content: url("/static/media/emotion_detection/icn_alert.png");
     position: absolute;
     left: 58%;
@@ -242,6 +299,19 @@ body {
     //z-index: 10;
 }
 
+.img_logo:before{
+    position: relative;
+    content: url("/static/media/emotion_detection/dharna2-transparent.png");
+    //background-position: center;
+    height: 75%;
+    left: 10%;
+    width: 80%; 
+    //max-height: 75%;
+    //max-width: 75%;
+    //background-repeat: no-repeat;
+    //z-index: 10;
+}
+
 .roadmap {
     /* The image used */
     position: relative;
@@ -260,15 +330,26 @@ body {
     background-size: cover;
 }
 
+
 .roadmap_row_1 {
     position: relative;
     top: 15%;
 }
 
+.intro1 {
+    position: relative;
+    top: -5%;
+    left: 0%;
+    color: #417041;
+}
+
 .ms1{
     position: relative;
-    top: -10%;
+    top: -5%;
     left: 0%;
+    background-color: #417041;
+    color: #f1f1f1; 
+    
 }
 
 .dw1{

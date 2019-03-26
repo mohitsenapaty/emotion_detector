@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^get_attention_data_test/', views.get_attention_data_test, name='get_attention_data_test'),
     url(r'^get_emotion_data_test/',views.get_emotion_data_test, name='get_emotion_data_test'),
     url(r'^combined_app/', views.combined_app, name='combined_app'),
+    url(r'^combined_app_new/', views.combined_app_new, name='combined_app_new'),
     url(r'^combined_app_live/', views.combined_app_live, name='combined_app_live'),
     url(r'^login_page/', views.login_page, name='login_page'),
     url(r'^log_out/', views.log_out, name='log_out'),

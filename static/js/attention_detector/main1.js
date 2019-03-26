@@ -1,29 +1,17 @@
 var vid;
-var overlay = document.getElementById('overlay');
+var overlay = document.getElementById('plotting_canvas');
 var overlayCC = overlay.getContext('2d');
 var globEmotionData;
 var colEmotionData = [];
 var started = 0;
-var midContentDiv = document.getElementById("midContent");
+var midContentDiv;
 
 window.setInterval(function(){
     if (started == 1 && globEmotionData !== false) colEmotionData.push(globEmotionData);
 }, 1000);
 
 
-$( function() {
-    $( "#accordion" ).accordion({
-        collapsible: true,
-        heightStyle: "fill"
-    });
-    $( "#accordion-resizer" ).resizable({
-      //minHeight: 140,
-      //minWidth: 200,
-      resize: function() {
-        $( "#accordion" ).accordion( "refresh" );
-      }
-    });
-});
+
 
 
 /********** check and set up video/webcam **********/
@@ -59,6 +47,7 @@ pModel.shapeModel.nonRegularizedVectors.push(11);
 
 var ctrack = new clm.tracker({useWebGL : true});
 ctrack.init(pModel);
+var trackingStarted = false;
 
 function startVideo() {
 
@@ -70,7 +59,7 @@ function startVideo() {
     // start loop to draw face
     if (started == 0){
         started = 1;
-        drawLoop();
+        //drawLoop();
         var startbutton = document.getElementById('startbutton');
         startbutton.value = "stop";
     }    
@@ -81,6 +70,7 @@ function startVideo() {
     }
 }
 
+/*
 function drawLoop() {
     requestAnimFrame(drawLoop);
     overlayCC.clearRect(0, 0, 400, 300);
@@ -104,6 +94,7 @@ function drawLoop() {
         }
     }
 }
+*/
 
 delete emotionModel['disgusted'];
 delete emotionModel['fear'];
@@ -112,7 +103,93 @@ ec.init(emotionModel);
 var emotionData = ec.getBlank();    
 /************ d3 code for barchart *****************/
 
-var margin = {top : 20, right : 20, bottom : 10, left : 40},
+
+
+
+
+/******** stats ********/
+
+stats = new Stats();
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.top = '0px';
+//document.getElementById('container').appendChild( stats.domElement );
+
+// update stats on every iteration
+document.addEventListener('clmtrackrIteration', function(event) {
+    stats.update();
+}, false);
+
+$(document).ready(function(){
+    
+    $('#btnSend').click(function(){
+        //alert("clicked");
+        var success = 0;
+        var param = {"data":colEmotionData}
+        $.ajax({
+                type: "POST",
+                data: param,
+                url: "../get_emotion_data/", 
+                
+                success: function(result){
+                    //alert(result);
+                    success += 1;
+                    $.ajax({
+                            type: "POST",
+                            data: {colAttentionData:colAttentionData},
+                            url: "../get_attention_data/", 
+                            
+                            success: function(result){
+                                alert(result);
+                                success += 1;
+                            },
+                            error: function(xhr, textStatus, errorThrown){
+                                alert('request failed');
+                            }
+                    });
+                },
+                error: function(xhr, textStatus, errorThrown){
+                    alert('request failed');
+                }
+        });
+        if (success == 2){
+            alert("Success!");
+        }
+        
+    });
+});
+
+var recordAttention = 0;
+var attentionPercent = -1.00;
+var colAttentionData = [];
+
+window.setInterval(function(){
+    if (recordAttention == 1) colAttentionData.push(attentionPercent);
+}, 1000);
+
+function Restart(){
+    document.getElementById("Accuracy").innerHTML = "<a>Not yet Calibrated</a>";
+    ClearCalibration();
+    PopUpInstruction();
+}
+
+window.onbeforeunload = function() {
+    //webgazer.end(); //Uncomment if you want to save the data even if you reload the page.
+    window.localStorage.clear(); //Comment out if you want to save data across different sessions
+}
+
+window.onload = function() {
+    var attentionDisplayDiv = document.getElementById("attentionDisplayDiv");
+    var videoDivRect = document.getElementById("youtubeIframe");
+    midContentDiv = document.getElementById("midContent");
+
+    var totalAttention = 0.00;
+    var attentionArray = [];
+    var a_cntr = 0;
+    var a1_cntr = 0;
+    
+    var offsets = videoDivRect.getBoundingClientRect();
+
+    var margin = {top : 20, right : 20, bottom : 10, left : 40},
     width = 400 - margin.left - margin.right,
     height = 100 - margin.top - margin.bottom;
 
@@ -165,7 +242,8 @@ svg.selectAll("text.yAxis").
   attr("transform", "translate(0, 18)").
   attr("class", "yAxis");
 
-function updateData(data) {
+
+  function updateData(data) {
     // update
     var rects = svg.selectAll("rect")
         .data(data)
@@ -184,164 +262,76 @@ function updateData(data) {
     rects.exit().remove();
     texts.exit().remove();
 }
-
-/******** stats ********/
-
-stats = new Stats();
-stats.domElement.style.position = 'absolute';
-stats.domElement.style.top = '0px';
-document.getElementById('container').appendChild( stats.domElement );
-
-// update stats on every iteration
-document.addEventListener('clmtrackrIteration', function(event) {
-    stats.update();
-}, false);
-
-$(document).ready(function(){
-    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    socket = new WebSocket( ws_scheme + "://" + window.location.host + "/chat/");
-    socket.onmessage = function(e) {
-        //alert(e);
-        //msgText=$('#displayChatMessages').text();
-        //msgText +="\n";
-        msgText = e.data;
-        $('#displayChatMessages').append(msgText+"<br/>");
-        $('#usertext').val('');
-    }
-    socket.onopen = function() {
-        //socket.send($('#usertext').val());
-        //alert("socket is opened")
-    }
-    // Call onopen directly if socket is already open
-    if (socket.readyState == WebSocket.OPEN) socket.onopen();
-    $('#usertext').keypress(function(e){
-        if(e.keyCode==13){
-            socket.send($('#usertext').val());
-            //$('#usertext').val('');
-        }
-    });
-    $('#btnSend').click(function(){
-        //alert("clicked");
-        var success = 0;
-        var param = {"data":colEmotionData}
-        $.ajax({
-                type: "POST",
-                data: param,
-                url: "../get_emotion_data/", 
-                
-                success: function(result){
-                    //alert(result);
-                    success += 1;
-                    $.ajax({
-                            type: "POST",
-                            data: {colAttentionData:colAttentionData},
-                            url: "../get_attention_data/", 
-                            
-                            success: function(result){
-                                alert(result);
-                                success += 1;
-                            },
-                            error: function(xhr, textStatus, errorThrown){
-                                alert('request failed');
-                            }
-                    });
-                },
-                error: function(xhr, textStatus, errorThrown){
-                    alert('request failed');
-                }
-        });
-        if (success == 2){
-            alert("Success!");
-        }
-        
-    });
-});
-
-var recordAttention = 0;
-var attentionPercent = -1.00;
-var colAttentionData = [];
-
-window.setInterval(function(){
-    if (recordAttention == 1) colAttentionData.push(attentionPercent);
-}, 1000);
-
-
-
-window.onload = function() {
-    var attentionDisplayDiv = document.getElementById("attentionDisplayDiv");
-    var videoDivRect = document.getElementById("youtubeIframe");
     
-    var totalAttention = 0.00;
-    var attentionArray = [];
-    var a_cntr = 0;
-    var a1_cntr = 0;
-    
-    var offsets = videoDivRect.getBoundingClientRect();
-    
-    webgazer.setRegression('ridge') /* currently must set regression and tracker */
-        .setTracker('clmtrackr')
-        .setGazeListener(function(data, clock) {
-         //   console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
-         //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
-        })
-        .begin()
-        .showPredictionPoints(true); /* shows a square every 100 milliseconds where current prediction is */
     var width = 320;
     var height = 240;
     var topDist = '0px';
     var leftDist = '0px';
+
+    webgazer.setRegression('ridge') /* currently must set regression and tracker */
+        .setTracker('clmtrackr')
+        .setGazeListener(function(data, clock) {
+          //   console.log(data); /* data is an object containing an x and y key which are the x and y prediction coordinates (no bounds limiting) */
+          //   console.log(clock); /* elapsed time in milliseconds since webgazer.begin() was called */
+        })
+        .begin()
+        .showPredictionPoints(true);
     
     var setup = function() {
         var video = document.getElementById('videoel');
-	vid = document.getElementById('videoel');
-	vid.addEventListener('canplay', enablestart, false);
+        vid = document.getElementById('videoel');
+        var vid_width = vid.width;
+        var vid_height = vid.height;
+        vid.addEventListener('canplay', enablestart, false);
 
+        var canvas = document.getElementById("plotting_canvas");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.position = 'fixed';
 
-	// check for camerasupport
-    function adjustVideoProportions() {
-        // resize overlay and video if proportions are different
-        // keep same height, just change width
-        //var proportion = vid.videoWidth/vid.videoHeight;
-        //vid_width = Math.round(vid_height * proportion);
-        //vid.width = vid_width;
-        //overlay.width = vid_width;
-    }
-    function gumSuccess( stream ) {
-        // add camera stream if getUserMedia succeeded
-        if ("srcObject" in vid) {
-            vid.srcObject = stream;
-        } else {
-            vid.src = (window.URL && window.URL.createObjectURL(stream));
+        function adjustVideoProportions() {
+            // resize overlay and video if proportions are different
+            // keep same height, just change width
+            var proportion = vid.videoWidth/vid.videoHeight;
+            vid_width = Math.round(vid_height * proportion);
+            vid.width = vid_width;
+            overlay.width = vid_width;
         }
-        vid.onloadedmetadata = function() {
-            adjustVideoProportions();
-            vid.play();
-        }
-        vid.onresize = function() {
-            adjustVideoProportions();
-            if (trackingStarted) {
-                ctrack.stop();
-                ctrack.reset();
-                ctrack.start(vid);
+        function gumSuccess( stream ) {
+            // add camera stream if getUserMedia succeeded
+            if ("srcObject" in vid) {
+                vid.srcObject = stream;
+            } else {
+                vid.src = (window.URL && window.URL.createObjectURL(stream));
+            }
+            vid.onloadedmetadata = function() {
+                adjustVideoProportions();
+                vid.play();
+            }
+            vid.onresize = function() {
+                adjustVideoProportions();
+                if (trackingStarted) {
+                    ctrack.stop();
+                    ctrack.reset();
+                    ctrack.start(vid);
+                }
             }
         }
-    }
-    function gumFail() {
-        alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
-    }
+        function gumFail() {
+            alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
+        }
 
-    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-    window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
 
-    // check for camerasupport
-    if (navigator.mediaDevices) {
-        navigator.mediaDevices.getUserMedia({video : true}).then(gumSuccess).catch(gumFail);
-    } else if (navigator.getUserMedia) {
-        navigator.getUserMedia({video : true}, gumSuccess, gumFail);
-    } else {
-        alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
-    }
-
+        // check for camerasupport
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({video : true}).then(gumSuccess).catch(gumFail);
+        } else if (navigator.getUserMedia) {
+            navigator.getUserMedia({video : true}, gumSuccess, gumFail);
+        } else {
+            alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
+        }
 
         video.style.display = 'block';
         video.style.position = 'absolute';
@@ -365,13 +355,42 @@ window.onload = function() {
         function drawLoop() {
             requestAnimFrame(drawLoop);
             overlay.getContext('2d').clearRect(0,0,width,height);
-            if (cl.getCurrentPosition()) {
-                cl.draw(overlay);
+
+            //emotion model part
+            if (ctrack.getCurrentPosition()) {
+                ctrack.draw(overlay);
             }
+            var cp = ctrack.getCurrentParameters();
+            midContentDiv.textContent = "";
+            var er = ec.meanPredict(cp);
+            globEmotionData = er;
+            if (er) {
+                updateData(er);
+                for (var i = 0;i < er.length;i++) {
+                    midContentDiv.textContent += er[i].emotion + " " + er[i].value + " ";
+                    if (er[i].value > 0.4) {
+                        document.getElementById('icon'+(i+1)).style.visibility = 'visible';
+                    } else {
+                        document.getElementById('icon'+(i+1)).style.visibility = 'hidden';
+                    }
+                }
+            }
+            
+            //attention part (possible duplicate)
+            //if (cl.getCurrentPosition()) {
+            //    cl.draw(overlay);
+            //}
             var attentionState = "No attention Data";
             var predDot = webgazer.getCurrentPrediction();
-            var pred_x = predDot.x;
-            var pred_y = predDot.y;
+            if (predDot !== null){
+                var pred_x = predDot.x;
+                var pred_y = predDot.y;
+            }
+            else{
+                var pred_x = 0;
+                var pred_y = 0;
+            }
+            
             offsets = videoDivRect.getBoundingClientRect();
             //attentionDisplayDiv.textContent="X: "+ pred.x + " Y: "+pred.y;
                         
@@ -394,19 +413,19 @@ window.onload = function() {
                     for (var i_a = 0; i_a < 10; i_a++){
                         a_sum+=parseInt(attentionArray[i_a]);
                     }
-		            if (a_sum >= 5){
-		                totalAttention += 1;
-		            }
-		            else{
-		                totalAttention += 0;
-		            }
-		            attentionArray = [];
+                    if (a_sum >= 5){
+                        totalAttention += 1;
+                    }
+                    else{
+                        totalAttention += 0;
+                    }
+                    attentionArray = [];
                     
                 }
-		        
+                
             }
             attentionPercent = (totalAttention * 100)/a1_cntr;
-		    attentionDisplayDiv.textContent = "X: " +pred_x+" Y: "+pred_y+" "+attentionState+" AttentionPercent: "+attentionPercent;
+            attentionDisplayDiv.textContent = "X: " +pred_x+" Y: "+pred_y+" "+attentionState+" AttentionPercent: "+attentionPercent;
         }
             
         drawLoop();
@@ -442,13 +461,29 @@ function recordButtonToggle() {
 function changeScreen(){
 
     document.getElementById('displayDiv').style.display = "block";
-    document.getElementById('entryBox').style.display = "none";
-    document.getElementById('calibHeader').style.display = "none";
+    //document.getElementById('entryBox').style.display = "none";
+    //document.getElementById('calibHeader').style.display = "none";
 
 }
 
 
+function globalRecordData(){
+    
+    startVideo();
+    if (recordAttention == 0){
+        //document.getElementById("b1").innerHTML = "Stop";
+        document.getElementById("statusRecord").innerHTML = "Recording Started!";
+        recordAttention = 1;
+        //started= 1;
+    }
+    else{
+        //document.getElementById("b1").innerHTML = "Stop";
+        document.getElementById("statusRecord").innerHTML = "Recording Stopped!";
+        recordAttention=0;
+        //started=0;
+    }
 
+}
 
 /*
 function sendAttentionData(){
@@ -480,5 +515,3 @@ $(document).ready(function(){
         });
     });
 });
-
-

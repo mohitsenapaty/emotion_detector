@@ -241,7 +241,7 @@
         <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js"></script>
-        <script src="{% static 'js/attention_detector/webgazer.js' %}"></script>
+        <script src="{% static 'js/attention_detector/webgazer2.js' %}"></script>
         <script src="{% static 'js/login_combined_app.js' %}"> </script>
         <script>
         var player;
@@ -251,31 +251,37 @@
             player = new YT.Player( 'youtubeIframeID', {
                 events: { 'onStateChange': onPlayerStateChange }
             });
+            alert(player.PlayerState);
         }
         function onPlayerStateChange(event) {
+            alert(event.data);
             switch(event.data) {
                 case 0:
+                    startbutton.value = "video ended";
                     if (playing == 1){
                         globalRecordData(); 
                         playing = 0;
-                        startbutton.value = "video ended";
+                        
                     }
                     //alert('video ended');
                 break;
                 case 1:
-                    if (playing == 0){
-                        globalRecordData();
-                        playing = 1;
+                    globalRecordData();
+                    playing = 1;
                         
-                        startbutton.value = "stop";
+                    startbutton.value = "stop";
+                    if (playing == 0){
+                        
+                        
                     }
                     //alert('video playing from '+player.getCurrentTime()+":" + recordAttention);
                 break;
                 case 2:
+                    globalRecordData();
+                    playing = 0;
+                    startbutton.value = "start  ";
                     if (playing == 1){
-                        globalRecordData();
-                        playing = 0;
-                        startbutton.value = "start  ";
+                        
                     }
                     //alert('video paused at '+player.getCurrentTime()+":" + recordAttention);
                 break;
