@@ -206,7 +206,7 @@
     
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/json2/20160511/json2.min.js"></script>
-        <script src="{% static 'js/attention_detector/webgazer.js' %}"></script>
+        <script src="{% static 'js/attention_detector/webgazer2.js' %}"></script>
         <script>
 var vid;
 var overlay = document.getElementById('overlay');
@@ -468,41 +468,55 @@ window.onload = function() {
     var topDist = '0px';
     var leftDist = '0px';
     
-    var setup = function() {
+var setup = function() {
         var video = document.getElementById('videoel');
-	vid = document.getElementById('videoel');
-	vid.addEventListener('canplay', enablestart, false);
+    vid = document.getElementById('videoel');
+    vid.addEventListener('canplay', enablestart, false);
 
-	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-	window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
+    // check for camerasupport
+    function adjustVideoProportions() {
+            // resize overlay and video if proportions are different
+            // keep same height, just change width
+            var proportion = vid.videoWidth/vid.videoHeight;
+            vid_width = Math.round(vid_height * proportion);
+            vid.width = vid_width;
+            overlay.width = vid_width;
+        }
+        function gumSuccess( stream ) {
+            // add camera stream if getUserMedia succeeded
+            if ("srcObject" in vid) {
+                vid.srcObject = stream;
+            } else {
+                vid.src = (window.URL && window.URL.createObjectURL(stream));
+            }
+            vid.onloadedmetadata = function() {
+                adjustVideoProportions();
+                vid.play();
+            }
+            vid.onresize = function() {
+                adjustVideoProportions();
+                if (trackingStarted) {
+                    ctrack.stop();
+                    ctrack.reset();
+                    ctrack.start(vid);
+                }
+            }
+        }
+        function gumFail() {
+            alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
+        }
 
-	// check for camerasupport
-	if (navigator.getUserMedia) {
-	    // set up stream
-	    
-	    var videoSelector = {video : true};
-	    if (window.navigator.appVersion.match(/Chrome\/(.*?) /)) {
-		var chromeVersion = parseInt(window.navigator.appVersion.match(/Chrome\/(\d+)\./)[1], 10);
-		if (chromeVersion < 20) {
-		    videoSelector = "video";
-		}
-	    };
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        window.URL = window.URL || window.webkitURL || window.msURL || window.mozURL;
 
-	    navigator.getUserMedia(videoSelector, function( stream ) {
-		if (vid.mozCaptureStream) {
-		    vid.mozSrcObject = stream;
-		} else {
-		    vid.src = (window.URL && window.URL.createObjectURL(stream)) || stream;
-		}
-		vid.play();
-	    }, function() {
-		//insertAltVideo(vid);
-		alert("There was some problem trying to fetch video from your webcam. If you have a webcam, please make sure to accept when the browser asks for access to your webcam.");
-	    });
-	} else {
-	    //insertAltVideo(vid);
-	    alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
-	}
+        // check for camerasupport
+        if (navigator.mediaDevices) {
+            navigator.mediaDevices.getUserMedia({video : true}).then(gumSuccess).catch(gumFail);
+        } else if (navigator.getUserMedia) {
+            navigator.getUserMedia({video : true}, gumSuccess, gumFail);
+        } else {
+            alert("This demo depends on getUserMedia, which your browser does not seem to support. :(");
+        }
 
         video.style.display = 'block';
         video.style.position = 'absolute';
@@ -530,7 +544,7 @@ window.onload = function() {
                 cl.draw(overlay);
             }
             var attentionState = "No attention Data";
-            var predDot = webgazer.getSmoothDot();
+            var predDot = webgazer.getCurrentPrediction();
             var pred_x = predDot.x;
             var pred_y = predDot.y;
             offsets = videoDivRect.getBoundingClientRect();

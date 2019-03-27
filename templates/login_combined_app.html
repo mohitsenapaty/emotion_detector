@@ -209,7 +209,8 @@
 
 	    </div>
         <div id="youtubeIframe" style="position:absolute; top:15%; left:20%; right:20%; bottom:15%; background-color:green;" >
-        <iframe id ="youtubeIframeID" src="https://www.youtube.com/embed/f7rRi0EUHiM?enablejsapi=1" width="100%" height="100%" frameborder="0" fs="0"></iframe>
+        <!--iframe id ="youtubeIframeID" src="https://www.youtube.com/embed/f7rRi0EUHiM?enablejsapi=1" width="100%" height="100%" frameborder="0" fs="0"></iframe-->
+        <iframe id ="youtubeIframeID" src="https://www.youtube.com/embed/live_stream?channel=UCR2jOsWA99lsdb1LxEv059w?enablejsapi=1" width="100%" height="100%" frameborder="0" fs="0"></iframe>
         </div>
         <div id ="attentionDisplayDiv" style="position:absolute; top:85%; left:2%; height:70px; width:160px">No Position Detected!</div>
         <div id ="buttonBox" style="position:absolute; top:92%; left:2%; height:80px; width:160px">
@@ -226,7 +227,7 @@
             <div id='emotion_chart'></div>
         </div>
         <div id="controls">
-            <input class="btn" type="button" value="wait, loading video" disabled="disabled" onclick="player.playVideo()" id="startbutton"></input>
+            <input class="btn" type="button" value="wait, loading video" disabled="disabled" onclick="globalRecordData()" id="startbutton"></input>
             <button id="btnSend">Send Data</button>
         </div>
     </div>
@@ -249,61 +250,68 @@
         var startbutton = document.getElementById('startbutton');
         function onYouTubeIframeAPIReady() {
             player = new YT.Player( 'youtubeIframeID', {
-                events: { 'onStateChange': onPlayerStateChange }
+                events: { 'onStateChange': {} }
             });
-            alert(player.PlayerState);
+            //alert(player.PlayerState);
         }
         function onPlayerStateChange(event) {
-            alert(event.data);
+            //alert(event.data);
             switch(event.data) {
                 case 0:
-                    startbutton.value = "video ended";
-                    if (playing == 1){
-                        globalRecordData(); 
-                        playing = 0;
+                    //alert("end");
+                    //startbutton.value = "video ended";
+                    //if (playing == 1){
+                        //globalRecordData(); 
+                    //    playing = 0;
                         
-                    }
+                    //}
                     //alert('video ended');
                 break;
                 case 1:
-                    globalRecordData();
-                    playing = 1;
+                    //alert("play");
+                    //globalRecordData();
+                    //playing = 1;
                         
-                    startbutton.value = "stop";
-                    if (playing == 0){
-                        
-                        
-                    }
+                    //startbutton.value = "stop";
+                    
                     //alert('video playing from '+player.getCurrentTime()+":" + recordAttention);
                 break;
                 case 2:
-                    globalRecordData();
-                    playing = 0;
-                    startbutton.value = "start  ";
-                    if (playing == 1){
-                        
-                    }
+                    //alert("pause");
+                    //globalRecordData();
+
                     //alert('video paused at '+player.getCurrentTime()+":" + recordAttention);
+                break;
+                default:
+                    //alert("nothing");
                 break;
             }
         }
         function globalRecordData(){
             
-            startVideo();
+            
+            //alert(recordAttention);
             if (recordAttention == 0){
+                alert(recordAttention);
                 if (playing == 0) {
+                    alert(playing);
                     player.playVideo();
+                    playing = 1;
                     document.getElementById("statusRecord").innerHTML = "Recording Started!";
-                    recordAttention = 1;
+                    //recordAttention = 1;
                 }
             }
             else{
+                alert(recordAttention);
                 if ( playing == 1){ 
+                    alert(playing);
                     player.pauseVideo();
+                    playing = 0;
                     document.getElementById("statusRecord").innerHTML = "Recording Stopped!";
-                    recordAttention=0;
+                    //recordAttention=0;
                 }
             }
+            startVideo();
 
         }
       

@@ -70,12 +70,14 @@ function startVideo() {
     // start loop to draw face
     if (started == 0){
         started = 1;
+        recordAttention = 1;
         drawLoop();
         var startbutton = document.getElementById('startbutton');
         startbutton.value = "stop";
     }    
     else{
         started = 0;
+        recordAttention = 0;
         var startbutton = document.getElementById('startbutton');
         startbutton.value = "start";
     }
